@@ -14,7 +14,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    // return view('welcome');
+    return view('landingpage');
+});
+Route::get('/movil', function () {
+    // return view('welcome');
+    return view('viaje');
 });
 
 

@@ -17,3 +17,16 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+Route::get('cliente/by/{telefono}', function ($telefono) {
+    $cliente = App\Cliente::where('telefono', $telefono)->with('ciudad')->first();
+    if ($cliente) {
+        return $cliente;
+    } else {
+        $newcliente = App\Cliente::create([
+            'telefono' => $telefono
+        ]);
+        return $newcliente;
+    }
+});
