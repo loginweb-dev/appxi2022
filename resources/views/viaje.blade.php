@@ -303,7 +303,7 @@
         }
 
         function newmarker(event) {
-            console.log(event.LatLng.lat())
+            // console.log(event.latLng.lat())
             var origen = JSON.parse(localStorage.getItem('origen'))
             var myLatLng = { lat: parseFloat(origen.latitud), lng: parseFloat(origen.longitud) }
             var viaje = {
@@ -315,20 +315,24 @@
             directionsDisplay.suppressMarkers = true;
             var directionsService = new google.maps.DirectionsService();
             directionsDisplay.setMap(map2);
-            directionsService.route(viaje, function(response, status) {
+            directionsService.route(viaje, async function(response, status) {
                 if (status == google.maps.DirectionsStatus.OK) {
                     directionsDisplay.setDirections(response)
-                    $("#distancia").val(response.routes[0].legs[0].distance.value)
-                    $("#tiempo").val(response.routes[0].legs[0].duration.value)
+                    $("#distancia").val(response.routes[0].legs[0].distance.text)
+                    $("#tiempo").val(response.routes[0].legs[0].duration.text)
                     $("#text_start").val(response.routes[0].legs[0].start_address)
                     $("#text_end").val(response.routes[0].legs[0].end_address)
                     var dikm = response.routes[0].legs[0].distance.value / 1000
                     var taprox = response.routes[0].legs[0].duration.value / 60
-                    // var papro = calcular_precio_estimado(1, 1, '11:22', taprox, dikm)
-                    // $("#precio_aprox").val(papro)
-
-                    // var destino = {latitud: event, longitud: lng_1, detalle: event}
-                    // localStorage.setItem('origen', JSON.stringify(origen))
+                    // console.log(taprox)
+                    var papro = await calcular_precio_estimado(1, 1, taprox, dikm)
+                    $("#precio_aprox").val(papro)
+                    console.log(Math.round(taprox))
+                    console.log(Math.round(dikm))
+                    console.log(papro)
+                    var detalle_2 = $("#detalle_destino").val()
+                    var destino = {latitud: event.latLng.lat(), longitud: event.latLng.lng(), detalle: detalle_2}
+                    localStorage.setItem('destino', JSON.stringify(destino))
                 }
             });
         }
@@ -344,11 +348,13 @@
             localStorage.setItem('miuser', JSON.stringify(micliente.data));
         }
 
-        async function calcular_precio_estimado(categoria_id, ciudad, hora_actual, tiempo_estimado, distancia_estimada){
+
+        async function calcular_precio_estimado(categoria_id, ciudad, tiempo_estimado, distancia_estimada){
             var precio=0;
-            var city= await axios("setting('admin.url_api')/ciudad/"+ciudad);
+            var city= await axios("{{setting('admin.url_api')}}ciudad/"+ciudad);
+
             switch(categoria_id){
-                case'1':
+                case 1:
                     if(CalculoHorasRestantes(city.data.horario_noche,tiempo_estimado)=="normal"){
                         precio= city.data.tarifa_base_dia_moto+(city.data.costo_minuto_moto*tiempo_estimado)+(city.data.costo_kilometro_moto*distancia_estimada);
                     }
@@ -356,7 +362,7 @@
                         precio= city.data.tarifa_base_noche_moto+(city.data.costo_minuto_moto*tiempo_estimado)+(city.data.costo_kilometro_moto*distancia_estimada);
                     }
                 break;
-                case'2':
+                case 2:
                     if(CalculoHorasRestantes(city.data.horario_noche,tiempo_estimado)=="normal"){
                         precio=city.data.tarifa_base_dia_auto+(city.data.costo_minuto_auto*tiempo_estimado)+(city.data.costo_kilometro_auto*distancia_estimada);
                     }
@@ -365,7 +371,7 @@
                     }
                 break;
             }
-            return precio;
+            return parseFloat(precio).toFixed(2);
         }
 
         function CalculoHorasRestantes(hora_ci, tiempo_estimado){

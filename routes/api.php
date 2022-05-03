@@ -35,7 +35,8 @@ Route::get('cliente/by/{telefono}', function ($telefono) {
         return $cliente;
     } else {
         $newcliente = App\Cliente::create([
-            'telefono' => $telefono
+            'telefono' => $telefono,
+            'ciudad_id' => 1
         ]);
         return $newcliente;
     }
