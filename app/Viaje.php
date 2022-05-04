@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Viaje extends Model
 {
 	use SoftDeletes;
-
     protected $fillable = [
     'cliente_id',
     'chofer_id',
@@ -28,5 +27,8 @@ class Viaje extends Model
     'pago_id'
     ];
 
-
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
 }

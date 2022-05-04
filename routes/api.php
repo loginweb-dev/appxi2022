@@ -12,6 +12,7 @@ use App\Objeto;
 use App\Pasarela;
 use App\Ubicacione;
 use App\Viaje;
+use App\Notificacione;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,16 +31,19 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::get('cliente/by/{telefono}', function ($telefono) {
-    $cliente = Cliente::where('telefono', $telefono)->with('ciudad')->first();
-    if ($cliente) {
-        return $cliente;
-    } else {
-        $newcliente = App\Cliente::create([
-            'telefono' => $telefono,
-            'ciudad_id' => 1
-        ]);
-        return $newcliente;
-    }
+    // $midata2=json_decode($midata);
+    return Cliente::where('telefono', $telefono)->with('ciudad')->first();
+    // if ($cliente) {
+    //     return $cliente;
+    // } else {
+    //     $newcliente = App\Cliente::create([
+    //         'telefono' => $midata2->telefono,
+    //         'ciudad_id' => $midata2->ciudad_id,
+    //         'nombres' => $midata2->nombres,
+    //         'apellidos' => $midata2->apelldos
+    //     ]);
+    //     return $newcliente;
+    // }
 });
 
 // TODOS LOS OBJETOS DEL VIAJE
@@ -64,9 +68,14 @@ Route::get('cliente/name/{criterio}', function($criterio){
     $cliente= Cliente::where('name', 'like', '%'.$criterio.'%')->orderBy('name', 'desc')->get();
 });
 //TODOS LOS CHOFERES
+Route::get('chofer/by/{telefono}', function($telefono){
+    return Chofere::where('telefono', $telefono)->with('ciudad')->first();
+});
+
 Route::get('choferes', function(){
     return Chofere::all();
 });
+
 //CHOFER POR ID
 Route::get('chofer_por_id/{id}', function($id){
     return Chofere::find($id);
@@ -127,42 +136,51 @@ Route::get('viaje/{id}', function($id){
 
 
 //SAVE VIAJE
-Route::get('saveviaje/{miviaje}', function($miviaje){
+Route::get('viaje/save/{miviaje}', function($miviaje){
     $miviaje2=json_decode($miviaje);
-
     $viaje= Viaje::create([
         'cliente_id'=>$miviaje2->cliente_id,
-        'chofer_id'=>$miviaje2->chofer_id,
-        'origen_location'=>$miviaje2->origen_location,
-        'destino_location'=>$miviaje2->destino_location,
-        'categoria_id'=>$miviaje2->categoria_id,
-        'precio_inicial'=>$miviaje2->precio_inicial,
-        'precio_final'=>$miviaje2->precio_final,
-        'cantidad_viajeros'=>$miviaje2->cantidad_viajeros,
-        'cantidad_objetos'=>$miviaje2->cantidad_objetos,
-        'tipo_objeto_id'=>$miviaje2->tipo_objeto_id,
-        'detalles'=>$miviaje2->detalles,
-        'status_id'=>$miviaje2->status_id,
-        'puntuacion'=>$miviaje2->puntuacion,
+        'chofer_id'=> null,
+        'origen_location'=> $miviaje2->origen_location,
+        'destino_location'=> $miviaje2->destino_location,
+        'categoria_id'=> $miviaje2->categoria_id,
+        'precio_inicial'=> $miviaje2->precio_inicial,
+        'precio_final'=> null,
+        'cantidad_viajeros'=> null,
+        'cantidad_objetos'=> null,
+        'tipo_objeto_id'=> null,
+        'detalles'=> null,
+        'status_id'=> 2,
+        'puntuacion'=> null,
         'tiempo'=>$miviaje2->tiempo,
         'distancia'=>$miviaje2->distancia,
-        'pago_id'=>$miviaje2->pago_id
+        'pago_id'=> null
 
     ]);
-
     return $viaje;
-
 });
 
 //SAVE UBICACION
-Route::get('saveubicacion/{miubicacion}', function($miubicacion){
-    $miubicacion2=json_decode($miubicacion);
-
-    $ubicacion= Viaje::create([
-        'latitud'=>$miubicacion2->latitud,
-        'longitud'=>$miubicacion2->longitud,
-        'descripcion'=>$miubicacion2->descripcion
-
+Route::get('location/save/{midata}', function($midata){
+    $midata2=json_decode($midata);
+    $ubicacion= Ubicacione::create([
+        'latitud'=>$midata2->latitud,
+        'longitud'=>$midata2->longitud,
+        'descripcion'=>$midata2->detalle
     ]);
     return $ubicacion;
+});
+
+
+//notificaiones
+Route::get('notificaciones', function () {
+    $result = Notificacione::all();
+    return $result;
+});
+Route::get('notificacione/save/{message}', function ($message) {
+    // $midata2 = json_decode($message);
+    $minoti = Notificacione::create([
+        'message' => $message
+    ]);
+    return $minoti;
 });
