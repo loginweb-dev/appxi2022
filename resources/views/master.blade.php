@@ -15,7 +15,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBacu367x_GAuwEOzKrjbQSyYqHCwWJpsc&v=weekly" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDH_m3M3RHw6s6AZeubtUZ8XIW7jC2MjCU&v=weekly" defer></script>
     <script src="https://socket.loginweb.dev/socket.io/socket.io.js"></script>
 
     <script>

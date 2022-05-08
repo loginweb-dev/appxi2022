@@ -184,3 +184,27 @@ Route::get('notificacione/save/{message}', function ($message) {
     ]);
     return $minoti;
 });
+
+//PIN CLINETE
+Route::get('pin/save/{cliente_id}/{pin}', function ($cliente_id, $pin) {
+    $cliente = Cliente::find($cliente_id);
+    $cliente->pin = $pin;
+    $cliente->save();
+    return $cliente;
+});
+Route::get('pin/get/{telefono}/{pin}', function ($telefono, $pin) {
+    $cliente = Cliente::where('telefono', $telefono)->where('pin', $pin)->with('ciudad')->first();
+    return $cliente;
+});
+
+//PIN CHOFER
+Route::get('chofer/pin/save/{chofer_id}/{pin}', function ($chofer_id, $pin) {
+    $chofer = Chofere::find($chofer_id);
+    $chofer->pin = $pin;
+    $chofer->save();
+    return $chofer;
+});
+Route::get('chofer/pin/get/{telefono}/{pin}', function ($telefono, $pin) {
+    $chofer = Chofere::where('telefono', $telefono)->where('pin', $pin)->with('ciudad')->first();
+    return $chofer;
+});

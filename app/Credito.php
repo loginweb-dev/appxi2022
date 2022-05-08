@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 
 
-class Pasarela extends Model
+class Credito extends Model
 {
     
 }

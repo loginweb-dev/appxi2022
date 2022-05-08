@@ -14,6 +14,7 @@ class Chofere extends Model
         'apellidos',
         'telefono',
         'ciudad_id',
+        'email',
         'perfil',
         'vehiculo',
         'carnet',
@@ -21,7 +22,8 @@ class Chofere extends Model
         'estado',
         'categoria_id',
         'estado_verificacion',
-        'creditos'
+        'creditos',
+        'pin'
 
     ];
 

@@ -14,7 +14,7 @@
 @endsection
 
 @section('content')
-    <ul class="collapsible popout">
+    <ul class="collapsible popout" id="miul" hidden>
         <li class="active">
             <div class="collapsible-header"><i class="material-icons">place</i>Origen y Tipo de Viaje</div>
             <table class="responsive-table">
@@ -145,36 +145,21 @@
             <h5>Cual es tu Telefono</h5>
             <div class="row">
                 <div class="col s9">
-                    {{-- <h6>Cual es tu Telefono ?</h6> --}}
                     <input placeholder="Ingresa tu telefono - 8 digitos" id="telefono" type="number" class="validate">
                 </div>
                 <div class="col s3">
-                    <a href="#" onclick="get_cliente()" class="waves-effect waves-light btn"><i class="material-icons">search</i></a>
-
-                    {{-- <h6>Cual es tu Ciudad ?</h6>
-                    <select class="browser-default" id="ciudad_id">
-                        @php
-                            $ciudades = App\Ciudade::all();
-                        @endphp
-                        @foreach ($ciudades as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
-                    </select> --}}
-                {{-- </div>
-                <div class="input-field col s6">
-                    <input placeholder="Nombres" id="nombres" type="text" class="validate">
-                    <label for="nombres">Nombres</label>
+                    <a id="btn_telefono" href="#" onclick="get_cliente()" class="waves-effect waves-light btn"><i class="material-icons">search</i></a>
                 </div>
-                <div class="input-field col s6">
-                    <input placeholder="Apellidos" id="apellidos" type="text" class="validate">
-                    <label for="apellidos">Apellidos</label>
-                </div> --}}
+            </div>
+            <div class="row">
+                <div class="col s9">
+                    <input placeholder="PIN - 4 digitos" id="pin" type="number" class="validate" disabled>
+                </div>
+                <div class="col s3">
+                    <a id="btn_pin" href="#" onclick="get_pin()" class="waves-effect waves-light btn" disabled><i class="material-icons">key</i></a>
+                </div>
             </div>
         </div>
-        {{-- <center>
-            <a href="#!" onclick="set_ciudad()" class="modal-close waves-effect waves-light btn pulse"><i class="material-icons">archive</i> Guardar</a>
-            <p>Todos los datos personales, son ecriptados para la seguridad de usuario. loginweb@2022</p>
-        </center> --}}
     </div>
 @endsection
 
@@ -185,16 +170,16 @@
             $('.collapsible').collapsible();
             $('.modal').modal();
             $('select').formSelect();
-
-            var options = {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
-            };
-            navigator.geolocation.getCurrentPosition(set_origen, error, options);
             var miuser = JSON.parse(localStorage.getItem('miuser'))
             if (miuser) {
                 M.toast({html: 'Bienvenido! '+miuser.nombres+' '+miuser.apellidos})
+                var options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                };
+                $("#miul").attr('hidden', false);
+                navigator.geolocation.getCurrentPosition(set_origen, error, options);
             } else {
                 $('#modal1').modal('open');
             }
@@ -374,7 +359,7 @@
         }
 
         function error(err) {
-            alert(err.message)
+            alert(err.message+" - Habilita tu Sensor GPS")
             console.warn('ERROR(' + err.code + '): ' + err.message)
         };
 
@@ -502,14 +487,44 @@
 
         async function get_cliente() {
             var telefono = $("#telefono").val()
-            var miuser = await axios("{{ setting('admin.url_api') }}cliente/by/"+telefono)
-            // console.log(miuser.data)
+            if (telefono == '') {
+                M.toast({html : 'Ingresa un telefono valido'})
+            } else {
+                var miuser = await axios("{{ setting('admin.url_api') }}cliente/by/"+telefono)
+                if (miuser.data) {
+                    var pin = Math.floor(1000 + Math.random() * 9000);
+                    var cliente = await axios("{{ setting('admin.url_api') }}pin/save/"+miuser.data.id+"/"+pin)
+                    var mensaje="Hola, tu pin para acceder a APPXI es: "+pin
+                    var wpp= await axios("https://chatbot.appxi.net/?type=text&phone="+telefono+"&message="+mensaje)
+                    M.toast({html : 'Revisa tu Whatsapp'})
+                    $("#telefono").attr('disabled', true);
+                    $("#btn_telefono").attr('disabled', true);
+                    $("#pin").attr('disabled', false);
+                    $("#btn_pin").attr('disabled', false);
+                } else {
+                    location.href= '/cliente/crear'
+                }
+            }
+        }
+        async function get_pin() {
+            var pin = $("#pin").val()
+            var telefono = $("#telefono").val()
+            var miuser = await axios("{{ setting('admin.url_api') }}pin/get/"+telefono+"/"+pin)
             if (miuser.data) {
                 localStorage.setItem('miuser', JSON.stringify(miuser.data))
                 $('#modal1').modal('close')
-            } else {
-                location.href= '/cliente/crear'
+                M.toast({html : 'Bienvenido'})
+                var options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                };
+                $("#miul").attr('hidden', false);
+                navigator.geolocation.getCurrentPosition(set_origen, error, options);
+            }else{
+                M.toast({html : 'Credenciales Invalidas'})
             }
         }
+
     </script>
     @endsection
