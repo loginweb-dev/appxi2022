@@ -154,10 +154,12 @@ Route::get('viaje/save/{miviaje}', function($miviaje){
         'puntuacion'=> null,
         'tiempo'=>$miviaje2->tiempo,
         'distancia'=>$miviaje2->distancia,
-        'pago_id'=> null
+        'pago_id'=> null,
+        'ciudad_id' => $miviaje2->ciudad_id
 
     ]);
-    return $viaje;
+    $newviaje = Viaje::where('id', $viaje->id)->with('cliente', 'estado', 'ciudad')->first();
+    return $newviaje;
 });
 
 //SAVE UBICACION
@@ -185,7 +187,7 @@ Route::get('notificacione/save/{message}', function ($message) {
     return $minoti;
 });
 
-//PIN CLINETE
+//PIN CLIENTE
 Route::get('pin/save/{cliente_id}/{pin}', function ($cliente_id, $pin) {
     $cliente = Cliente::find($cliente_id);
     $cliente->pin = $pin;
@@ -194,6 +196,14 @@ Route::get('pin/save/{cliente_id}/{pin}', function ($cliente_id, $pin) {
 });
 Route::get('pin/get/{telefono}/{pin}', function ($telefono, $pin) {
     $cliente = Cliente::where('telefono', $telefono)->where('pin', $pin)->with('ciudad')->first();
+    $cliente->verificado = true;
+    $cliente->save();
+    return $cliente;
+});
+Route::get('pin/update/{id}', function ($id) {
+    $cliente = Cliente::find($id);
+    $cliente->verificado = true;
+    $cliente->save();
     return $cliente;
 });
 
@@ -206,5 +216,11 @@ Route::get('chofer/pin/save/{chofer_id}/{pin}', function ($chofer_id, $pin) {
 });
 Route::get('chofer/pin/get/{telefono}/{pin}', function ($telefono, $pin) {
     $chofer = Chofere::where('telefono', $telefono)->where('pin', $pin)->with('ciudad')->first();
+    return $chofer;
+});
+
+// monitor solicitudes
+Route::get('chofer/verificado', function ($id) {
+    $chofer = Chofer::where('estado_verificacion', true)->first();
     return $chofer;
 });

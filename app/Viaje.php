@@ -24,11 +24,20 @@ class Viaje extends Model
     'puntuacion',
     'tiempo',
     'distancia',
-    'pago_id'
+    'pago_id',
+    'ciudad_id'
     ];
 
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
+    public function estado()
+    {
+        return $this->belongsTo(Estado::class, 'status_id');
+    }
+    public function ciudad()
+    {
+        return $this->belongsTo(Ciudade::class, 'ciudad_id');
     }
 }

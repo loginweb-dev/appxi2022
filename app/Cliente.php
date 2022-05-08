@@ -14,7 +14,8 @@ class Cliente extends Model
 		'telefono',
 		'ciudad_id',
 		'email',
-		'perfil'
+		'perfil',
+        'verficado'
 	];
 
     public function ciudad()

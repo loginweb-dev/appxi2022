@@ -42,8 +42,9 @@ Route::get('cliente/crear', function () {
     return view('register_cliente');
 });
 
-Route::get('viaje/{id}', function ($id) {
-    return view('viaje', compact('id'));
+Route::get('viaje/{id}', function () {
+
+    return view('viaje');
 })->name('viaje');
 
 Route::get('misviajes', function () {
@@ -59,18 +60,14 @@ Route::get('viajes/monitor', function () {
 })->name('viajes_monitor');
 
 Route::post('chofer/nuevo', function  (Request $request) {
-
     $validated = $request->validate([
         'categoria_id' => 'required|integer'
     ]);
     $validated = $request->validate([
         'ciudad_id' => 'required'
     ]);
-
-
     $perfil = $request->file('imgchofer');
     $newperfil =  Storage::disk('public')->put('choferes', $perfil);
-
     $ci= $request->file('imgcarnet');
     $newcarnet=[];
     $indexcarnet=0;
@@ -78,8 +75,6 @@ Route::post('chofer/nuevo', function  (Request $request) {
         $newcarnet[$indexcarnet]=Storage::disk('public')->put('choferes', $item);
         $indexcarnet=$indexcarnet+1;
     }
-
-
     $licencia= $request->file('imglicencia');
     $newlicencia=[];
     $indexlicencia=0;
@@ -87,12 +82,8 @@ Route::post('chofer/nuevo', function  (Request $request) {
         $newlicencia[$indexlicencia]=Storage::disk('public')->put('choferes', $item);
         $indexlicencia=$indexlicencia+1;
     }
-
-
     $vehiculo= $request->file('imgfotosdelvehiculo');
     $newvehiculo=Storage::disk('public')->put('choferes', $vehiculo);
-
-
     $chofer= App\Chofere::create([
         'nombres'=> $request->firstname,
         'apellidos'=> $request->lastname,
@@ -107,28 +98,20 @@ Route::post('chofer/nuevo', function  (Request $request) {
         'categoria_id'=>$request->categoria_id,
         'estado_verificacion'=>0,
         'creditos'=>0
-
-
     ]);
-
-
 return view('welcome_chofer', compact('chofer'));
-
 })->name('registro_chofer');
 
 
 Route::post('chofer_update', function  (Request $request) {
-
     $validated = $request->validate([
         'categoria_id' => 'required|integer'
     ]);
     $validated = $request->validate([
         'ciudad_id' => 'required'
     ]);
-
     $perfil = $request->file('imgchofer');
     $newperfil =  Storage::disk('public')->put('choferes', $perfil);
-
     $ci= $request->file('imgcarnet');
     $newcarnet=[];
     $indexcarnet=0;
@@ -136,8 +119,6 @@ Route::post('chofer_update', function  (Request $request) {
         $newcarnet[$indexcarnet]=Storage::disk('public')->put('choferes', $item);
         $indexcarnet=$indexcarnet+1;
     }
-
-
     $licencia= $request->file('imglicencia');
     $newlicencia=[];
     $indexlicencia=0;
@@ -145,42 +126,35 @@ Route::post('chofer_update', function  (Request $request) {
         $newlicencia[$indexlicencia]=Storage::disk('public')->put('choferes', $item);
         $indexlicencia=$indexlicencia+1;
     }
-
-
     $vehiculo= $request->file('imgfotosdelvehiculo');
     $newvehiculo=Storage::disk('public')->put('choferes', $vehiculo);
-
-
 })->name('update_chofer');
 
 
 Route::post('cliente/nuevo', function  (Request $request) {
-
     $validated = $request->validate([
         'ciudad_id' => 'required'
     ]);
-
     $perfil = $request->file('imgcliente');
     $newperfil = null;
     if ($perfil) {
         $newperfil =  Storage::disk('public')->put('clientes', $perfil);
     }
-
-
-
     $cliente= App\Cliente::create([
         'nombres'=> $request->firstname,
         'apellidos'=> $request->lastname,
         'telefono'=> $request->phone,
         'ciudad_id'=> $request->ciudad_id,
         'perfil'=> $newperfil ? $newperfil : null,
+        'verificado'=> false
 
     ]);
-
-
-
     return view('welcome_cliente', compact('cliente'));
 })->name('registro_cliente');
+
+Route::get('cliente/welcome', function () {
+    return view('welcome_cliente');
+})->name('welcome_cliente');
 
 Route::get('welcomes/chofer', function () {
     return view('welcome_chofer');

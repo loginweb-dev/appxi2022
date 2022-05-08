@@ -13,18 +13,21 @@
           </center>
           <ul class="collection">
               @php
-                  $viajes = App\Viaje::where('status_id', 2)->with('cliente')->get();
+                  $viajes = App\Viaje::where('status_id', 2)->where('ciudad_id', 1)->with('cliente', 'estado')->get();
               @endphp
               @if ($viajes)
                 @foreach ($viajes as $item)
+                @php
+                     $img = $item->cliente->perfil ? $item->cliente->perfil : setting('cliente.perfil_default');
+                @endphp
                     <li class="collection-item avatar">
-                        <img src="{{ setting('admin.url_storage').$item->cliente->perfil }}" alt="" class="circle">
+                        <img src="{{ setting('admin.url_storage').$img }}" alt="" class="circle">
                         <span class="title">{{ $item->cliente->nombres.' '.$item->cliente->apellidos }}</span>
                         <p>Fecha y Hora: {{ $item->created_at }}</p>
                         <p>Precio Ofertado: {{ $item->precio_inicial }} Bs</p>
                         <p>Distancia: {{ $item->distancia }} Km</p>
                         <p>Tiempo: {{ $item->tiempo }} Minutos</p>
-                        <a href="#" class="secondary-content tooltipped" data-position="bottom" data-tooltip="Detalle del Viaje"><i class="material-icons">map</i></a>
+                        <a href="#" class="secondary-content tooltipped" data-position="bottom" data-tooltip="Detalle del Viaje"><i class="material-icons">remove_red_eye</i></a>
                     </li>
                 @endforeach
               @else
