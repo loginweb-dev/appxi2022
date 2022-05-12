@@ -3,12 +3,58 @@
 
 @section('content')
     <div class="container-fluid" id="miul" hidden>
+        <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil" >
         <div class="row">
+
             <div class="col s12">
-                <center>
-                    <h4>Mi Perfil</h4>
-                    <a style="background-color: #0C2746;" href="#" onclick="salir()" class="waves-effect waves-light btn">Salir</a>
-                </center>
+                <form action="{{route('registro_cliente')}}" method="POST" enctype="multipart/form-data">
+                    {{ csrf_field() }}
+                    <div class="row">
+                        <div class="input-field col s3">
+                            <label for="codigo">Codigo</label>
+                            <input placeholder="Codigo"  type="number" id="codigo" name="codigo" value="+591" required readonly>
+                        </div>
+                        <div class="input-field col s9">
+                            <label for="phone">Teléfono</label>
+                            <input type="number" class="validate" id="phone" name="phone" placeholder="Número de Celular" value="{{ old('phone') }}" required>
+                        </div>
+                        <div class="col s6">
+                            <div class="input-field">
+                                <label for="firstname">Nombres (*)</label>
+                                <input type="text" class="validate" id="firstname" name="firstname" placeholder="Ingrese tu nombre" value="{{ old('firstname') }}" required>
+                            </div>
+                        </div>
+                        <div class="col s6">
+                            <div class="input-field">
+                                <label for="lastname">Apellidos (*)</label>
+                                <input type="text" class="validate" id="lastname" name="lastname" placeholder="Ingrese tu apellido" value="{{ old('lastname') }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <label for="lastname">Localidad (*)</label>
+                            <select class="browser-default" name="ciudad_id" id="ciudad_select"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="file-field input-field">
+                                <div class="btn">
+                                    <input id="imgcliente" name="imgcliente" type="file">
+                                    <i class="material-icons">photo_library</i>
+                                </div>
+                                <div class="file-path-wrapper">
+                                    <input class="file-path" name="imgcliente" type="text" placeholder="Selfy">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <center>
+                        <button id="btn_enviar" style="background-color: #0C2746;" class="btn waves-effect waves-light" type="submit" name="action">Editar Perfil </button>
+                        <a style="background-color: #0C2746;" onclick="salir()" class="waves-effect waves-light btn">Salir</a>
+                    </center>
+                </form>
             </div>
         </div>
     </div>
@@ -64,6 +110,7 @@
             if (miuser) {
                 M.toast({html: 'Bienvenido! '+miuser.nombres+' '+miuser.apellidos})
                 $("#miul").attr('hidden', false)
+                $("#phone").val(miuser.telefono)
             } else {
                 $('#modal1').modal('open')
             }

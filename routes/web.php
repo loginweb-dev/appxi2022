@@ -17,6 +17,10 @@ Route::get('/', function () {
     return view('landingpage');
 });
 
+Route::get('/mapa/cliente', function () {
+    return view('mapa_cliente');
+});
+
 Route::get('/privacidad', function () {
     return view('privacidad');
 });
@@ -60,30 +64,41 @@ Route::get('viajes/monitor', function () {
 })->name('viajes_monitor');
 
 Route::post('chofer/nuevo', function  (Request $request) {
+    // return $request;
     $validated = $request->validate([
-        'categoria_id' => 'required|integer'
-    ]);
-    $validated = $request->validate([
+        'categoria_id' => 'required',
         'ciudad_id' => 'required'
     ]);
+    // $validated = $request->validate([
+    //     'ciudad_id' => 'required'
+    // ]);
+
     $perfil = $request->file('imgchofer');
     $newperfil =  Storage::disk('public')->put('choferes', $perfil);
-    $ci= $request->file('imgcarnet');
-    $newcarnet=[];
-    $indexcarnet=0;
-    foreach($ci as $item){
-        $newcarnet[$indexcarnet]=Storage::disk('public')->put('choferes', $item);
-        $indexcarnet=$indexcarnet+1;
-    }
-    $licencia= $request->file('imglicencia');
-    $newlicencia=[];
-    $indexlicencia=0;
-    foreach($licencia as $item){
-        $newlicencia[$indexlicencia]=Storage::disk('public')->put('choferes', $item);
-        $indexlicencia=$indexlicencia+1;
-    }
     $vehiculo= $request->file('imgfotosdelvehiculo');
     $newvehiculo=Storage::disk('public')->put('choferes', $vehiculo);
+
+    $ci= $request->file('imgcarnet');
+    $newcarnet=[];
+    if ($ci) {
+        $indexcarnet=0;
+        foreach($ci as $item){
+            $newcarnet[$indexcarnet]=Storage::disk('public')->put('choferes', $item);
+            $indexcarnet=$indexcarnet+1;
+        }
+    }
+
+    $licencia= $request->file('imglicencia');
+    $newlicencia=[];
+    if ($licencia) {
+        $indexlicencia=0;
+        foreach($licencia as $item){
+            $newlicencia[$indexlicencia]=Storage::disk('public')->put('choferes', $item);
+            $indexlicencia=$indexlicencia+1;
+        }
+    }
+
+
     $chofer= App\Chofere::create([
         'nombres'=> $request->firstname,
         'apellidos'=> $request->lastname,
@@ -91,13 +106,13 @@ Route::post('chofer/nuevo', function  (Request $request) {
         'telefono'=> $request->phone,
         'ciudad_id'=> $request->ciudad_id,
         'perfil'=> $newperfil,
-        'breve'=> json_encode($newlicencia),
+        'breve'=> $newlicencia ? json_encode($newlicencia) : null,
         'vehiculo'=> $newvehiculo,
-        'carnet'=>json_encode($newcarnet),
-        'estado'=>1,
+        'carnet'=> $newcarnet ? json_encode($newcarnet) : null,
+        'estado'=>false,
         'categoria_id'=>$request->categoria_id,
-        'estado_verificacion'=>0,
-        'creditos'=>0
+        'estado_verificacion'=>false,
+        'creditos'=>500
     ]);
 return view('welcome_chofer', compact('chofer'));
 })->name('registro_chofer');
@@ -146,7 +161,8 @@ Route::post('cliente/nuevo', function  (Request $request) {
         'telefono'=> $request->phone,
         'ciudad_id'=> $request->ciudad_id,
         'perfil'=> $newperfil ? $newperfil : null,
-        'verificado'=> false
+        'verificado'=> false,
+        'estado' => false
 
     ]);
     return view('welcome_cliente', compact('cliente'));
@@ -182,4 +198,14 @@ Route::get('creditos/chofer', function () {
 
 Route::get('notificacion/banipay', function () {
     return view('notificacion_banipay');
+});
+
+Route::get('verification/chofer', function () {
+    return view('verification');
+});
+Route::get('detalle_viaje_chofer', function () {
+    return view('detalle_viaje_chofer');
+});
+Route::get('mapa_chofer', function () {
+    return view('mapa_chofer');
 });

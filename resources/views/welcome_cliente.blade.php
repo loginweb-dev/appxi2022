@@ -3,6 +3,7 @@
 
 @section('content')
     <div class="container-fluid">
+        <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil">
         <div class="row">
             <div class="col s12">
                 <center>
@@ -21,12 +22,10 @@
 @endsection
 
 @section('javascript')
-
     <script>
         $('document').ready(function () {
             verificar()
         });
-
         async function verificar() {
             var pin = Math.floor(1000 + Math.random() * 9000);
             var telefono = $("#telefono").val()
@@ -45,12 +44,11 @@
                 var clienteupdate = await axios("{{ setting('admin.url_api') }}pin/update/"+miuser.data.id)
                 localStorage.setItem('miuser', JSON.stringify(clienteupdate.data))
                 M.toast({html : 'Bienvenido a APPXI'})
-                location.href='/welcome'
+                location.href='/viaje/crear'
             }else{
                 M.toast({html : 'Credenciales Invalidas'})
+                $("#pin").val('')
             }
         }
     </script>
-
-
 @endsection

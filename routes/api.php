@@ -8,6 +8,7 @@ use App\Chofere;
 use App\Ciudade;
 use App\Cliente;
 use App\Estado;
+use App\Negociacione;
 use App\Objeto;
 use App\Pasarela;
 use App\Ubicacione;
@@ -30,20 +31,24 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
+//CLIENTE
 Route::get('cliente/by/{telefono}', function ($telefono) {
-    // $midata2=json_decode($midata);
     return Cliente::where('telefono', $telefono)->with('ciudad')->first();
-    // if ($cliente) {
-    //     return $cliente;
+});
+Route::get('cliente/viajes/{id}', function ($id) {
+    return Viaje::where('cliente_id', $id)->with('cliente', 'estado')->orderBy('created_at', 'desc')->get();
+});
+Route::get('cliente/viaje/negociaciones/{id}', function ($id) {
+    //add chofer libre
+    // $nego = Negociacione::where('viaje_id', $id)->with('chofer')->get();
+    // $chofer = Chofer::where('chofer_id', $nego->chofer_id)->first();
+    // if ($chofer->estado) {
+    //     # code...
     // } else {
-    //     $newcliente = App\Cliente::create([
-    //         'telefono' => $midata2->telefono,
-    //         'ciudad_id' => $midata2->ciudad_id,
-    //         'nombres' => $midata2->nombres,
-    //         'apellidos' => $midata2->apelldos
-    //     ]);
-    //     return $newcliente;
+    //     # code...
     // }
+
+    return Negociacione::where('viaje_id', $id)->with('chofer')->get();
 });
 
 // TODOS LOS OBJETOS DEL VIAJE
@@ -59,6 +64,7 @@ Route::get('objeto_individual/{criterio}', function($criterio){
 Route::get('clientes', function(){
     return Cliente::all();
 });
+
 //CLIENTE POR ID
 Route::get('cliente_por_id/{id}', function($id){
     return Cliente::find($id);
@@ -71,7 +77,9 @@ Route::get('cliente/name/{criterio}', function($criterio){
 Route::get('chofer/by/{telefono}', function($telefono){
     return Chofere::where('telefono', $telefono)->with('ciudad')->first();
 });
-
+Route::get('chofer/id/{id}', function($id){
+    return Chofere::find($id);
+});
 Route::get('choferes', function(){
     return Chofere::all();
 });
@@ -125,16 +133,44 @@ Route::get('ubicacion/{id}', function($id){
     return Ubicacione::find($id);
 });
 
-//TODAS LOS VIAJES
+//TODAS LOS VIAJES----------------------
 Route::get('viajes', function(){
     return Viaje::all();
 });
+
+Route::get('viaje/aprobado/{midata}', function($midata){
+    $midata2=json_decode($midata);
+
+    $viaje = Viaje::find($midata2->viaje_id);
+    $viaje->status_id = 6;
+    $viaje->chofer_id = $midata2->chofer_id;
+    $viaje->precio_final = $midata2->precio_final;
+    $viaje->save();
+
+    $nego = Negociacione::find($midata2->nego_id);
+    $nego->status = true;
+    $nego->save();
+
+    $chofer = Chofere::find($midata2->chofer_id);
+    $chofer->estado = false;
+    $chofer->save();
+
+    $newviaje = Viaje::find($midata2->viaje_id);
+    return $newviaje;
+});
+
 //VIAJE POR ID
 Route::get('viaje/{id}', function($id){
     return Viaje::find($id);
 });
-
-
+//Viajes para chofer disponibles
+Route::get('viajes_chofer/{ciudad_id}', function($ciudad_id){
+    return Viaje::where('ciudad_id',$ciudad_id)->where('status_id',2)->with('cliente')->get();
+});
+//Viajes hechos por chofer
+Route::get('viajes_chofer_concluidos/{id}', function($id){
+    return Viaje::where('chofer_id',$id)->where('status_id',4)->with('cliente')->get();
+});
 //SAVE VIAJE
 Route::get('viaje/save/{miviaje}', function($miviaje){
     $miviaje2=json_decode($miviaje);
@@ -144,25 +180,29 @@ Route::get('viaje/save/{miviaje}', function($miviaje){
         'origen_location'=> $miviaje2->origen_location,
         'destino_location'=> $miviaje2->destino_location,
         'categoria_id'=> $miviaje2->categoria_id,
-        'precio_inicial'=> $miviaje2->precio_inicial,
+        'precio_inicial'=> $miviaje2->precio_ofertado,
         'precio_final'=> null,
-        'cantidad_viajeros'=> null,
-        'cantidad_objetos'=> null,
-        'tipo_objeto_id'=> null,
+        'cantidad_viajeros'=> $miviaje2->cantidad_viajeros,
+        'cantidad_objetos'=> $miviaje2->cantidad_objetos,
+        'tipo_objeto_id'=> $miviaje2->tipo_objeto_id,
         'detalles'=> null,
         'status_id'=> 2,
         'puntuacion'=> null,
         'tiempo'=>$miviaje2->tiempo,
         'distancia'=>$miviaje2->distancia,
-        'pago_id'=> null,
-        'ciudad_id' => $miviaje2->ciudad_id
-
+        'pago_id'=> $miviaje2->pago_id,
+        'ciudad_id' => $miviaje2->ciudad_id,
+        'dt' =>$miviaje2->dt,
+        'tt' =>$miviaje2->tt,
+        'origen_g' =>$miviaje2->origen_g,
+        'destino_g' =>$miviaje2->destino_g,
+        'estado' => true
     ]);
-    $newviaje = Viaje::where('id', $viaje->id)->with('cliente', 'estado', 'ciudad')->first();
+    $newviaje = Viaje::where('id', $viaje->id)->with('cliente', 'estado', 'ciudad', 'categoria')->first();
     return $newviaje;
 });
 
-//SAVE UBICACION
+//SAVE UBICACION---------------
 Route::get('location/save/{midata}', function($midata){
     $midata2=json_decode($midata);
     $ubicacion= Ubicacione::create([
@@ -174,7 +214,7 @@ Route::get('location/save/{midata}', function($midata){
 });
 
 
-//notificaiones
+//notificaciones
 Route::get('notificaciones', function () {
     $result = Notificacione::all();
     return $result;
@@ -204,7 +244,8 @@ Route::get('pin/update/{id}', function ($id) {
     $cliente = Cliente::find($id);
     $cliente->verificado = true;
     $cliente->save();
-    return $cliente;
+    $newcliente = Cliente::where('telefono', $cliente->telefono)->where('pin', $cliente->pin)->with('ciudad')->first();
+    return $newcliente;
 });
 
 //PIN CHOFER
@@ -219,8 +260,98 @@ Route::get('chofer/pin/get/{telefono}/{pin}', function ($telefono, $pin) {
     return $chofer;
 });
 
+Route::get('chofer/pin/update/{id}', function ($id) {
+    $chofer = Chofere::find($id);
+    $chofer->verificado = true;
+    $chofer->save();
+    $newchofer = Chofere::where('telefono', $chofer->telefono)->where('pin', $chofer->pin)->with('ciudad')->first();
+    return $newchofer;
+});
+
 // monitor solicitudes
 Route::get('chofer/verificado', function ($id) {
     $chofer = Chofer::where('estado_verificacion', true)->first();
     return $chofer;
 });
+
+
+//SAVE NECOCIACION
+Route::get('save_negociaciones/{midata}',function($midata){
+    $midata2= json_decode($midata);
+
+    $negociacion= Negociacione::create([
+        'cliente_id'=>$midata2->cliente_id,
+        'chofer_id'=>$midata2->chofer_id,
+        'viaje_id'=>$midata2->viaje_id,
+        'precio_contraofertado'=>$midata2->precio_contraofertado,
+        'status'=>$midata2->status
+    ]);
+
+    return $negociacion;
+});
+
+
+//Update Estado Chofer
+Route::get('update_estado/chofer/{id}/{estado}',function($id,$estado){
+    $chofer=Chofere::find($id);
+    $chofer->estado=$estado;
+    $chofer->save();
+});
+
+
+//Consultar Chofer Ocupado con Viaje(Recogiendo)
+Route::get('chofer_viaje_consulta/{id}', function($id){
+    $viajes= Viaje::where('chofer_id',$id)->where('status_id',6)->first();
+    return $viajes;
+});
+
+//Consultar Chofer Ocupado con Viaje(Llevando a su destino)
+Route::get('viaje_chofer_encurso/{id}', function($id){
+    $viajes= Viaje::where('chofer_id',$id)->where('status_id',3)->first();
+    return $viajes;
+});
+
+
+//Concluir Viaje
+Route::get('concluir_viaje/{id}',function($id){
+    $viaje=Viaje::find($id);
+    $viaje->status_id=4;
+    $viaje->save();
+
+    return true;
+});
+
+
+//Cancelar Viaje
+Route::get('cancelar_viaje/{id}/{detalle}',function($id,$detalle){
+    $viaje=Viaje::find($id);
+    $viaje->status_id=5;
+    $viaje->detalles=$detalle;
+    $viaje->save();
+
+    return true;
+});
+
+//Pasajero Recogido
+Route::get('cliente_recogido/{id}',function($id){
+    $viaje=Viaje::find($id);
+    $viaje->status_id=3;
+    $viaje->save();
+
+    return true;
+});
+
+//////////////FILTROS///////////////
+
+//Filtro Numero de Viaje Chofer
+
+// Route::get('viaje_chofer_num/{id}/{num}', function($id,$num){
+//     $viajes= Viaje::where('chofer_id',$id)->where('status_id',4)->get();
+
+//     foreach($viajes as $item){
+
+//     }
+//     return $viajes;
+// });
+
+

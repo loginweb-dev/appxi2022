@@ -15,7 +15,8 @@ class Cliente extends Model
 		'ciudad_id',
 		'email',
 		'perfil',
-        'verficado'
+        'verficado',
+        'estado'
 	];
 
     public function ciudad()

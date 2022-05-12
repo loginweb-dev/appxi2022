@@ -3,7 +3,7 @@
 namespace App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
-
+use Carbon\Carbon;
 
 class Viaje extends Model
 {
@@ -25,8 +25,18 @@ class Viaje extends Model
     'tiempo',
     'distancia',
     'pago_id',
-    'ciudad_id'
+    'ciudad_id',
+    'dt',
+    'tt',
+    'origen_g',
+    'destino_g',
+    'estado'
     ];
+
+    protected $appends=['published'];
+	public function getPublishedAttribute(){
+		return Carbon::createFromTimeStamp(strtotime($this->attributes['created_at']) )->diffForHumans();
+	}
 
     public function cliente()
     {
@@ -39,5 +49,13 @@ class Viaje extends Model
     public function ciudad()
     {
         return $this->belongsTo(Ciudade::class, 'ciudad_id');
+    }
+    public function chofer()
+    {
+        return $this->belongsTo(Chofere::class, 'chofer_id');
+    }
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 }

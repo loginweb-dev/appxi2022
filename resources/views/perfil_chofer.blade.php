@@ -36,12 +36,28 @@
 
                 <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil" ><br>
 
-                <div class="input-field col s6">
-                    <h5>Perfil Conductor(a)</h5>
-                </div>
-                <div class="inpu-field col s2">
+                <div class="input-field col s5">
+                        <h5>Perfil Conductor(a)   </h5>
+
+
+
 
                 </div>
+                {{-- <div class="input-field col s3" id="user_verificado" >
+                    <br><br>
+                    <i class="material-icons">verified_user</i>
+                    <small>verificado</small>
+
+
+                </div>
+                <div class="input-field col s3" id="user_sinverificar" hidden>
+                    <br><br>
+                    <i class="material-icons">warning</i>
+                    <small>sin verificar</small>
+                </div> --}}
+
+                <div id="verification"></div>
+
                 <div id="perfil_chofer" class="input-field col s4">
 
                 </div>
@@ -69,7 +85,7 @@
 
                 <div class="input-field col s12">
                     <label for="verificacion">Estado de Verificación</label>
-                    <input type="number" class="validate" id="verificacion" name="verificacion"   readonly>
+                    <input type="number" class="validate" id="verificacion" name="verificacion" value="1"  readonly>
                 </div>
 
 
@@ -200,6 +216,7 @@
             </div>
         </div>
     </div>
+
 @endsection
 
 @section('javascript')
@@ -223,6 +240,7 @@
 
             Categorias();
             Ciudades();
+            Verification();
             //$("#miul").attr('hidden', false);
         } else {
             $('#modal1').modal('open');
@@ -275,6 +293,8 @@
 
             Categorias();
             Ciudades();
+            Verification();
+
         }else{
             M.toast({html : 'Credenciales Invalidas'})
         }
@@ -347,10 +367,12 @@
                 text: ' '+table_antigua.data.name+' '
             }));
             for (let index = 0; index < table.data.length; index++) {
-                $('#categoria_select').append($('<option>', {
-                    value: table.data[index].id,
-                    text: table.data[index].name
-                }));
+                if(table.data[index].id!=categoria_id){
+                    $('#categoria_select').append($('<option>', {
+                        value: table.data[index].id,
+                        text: table.data[index].name
+                    }));
+                }
             }
         }
 
@@ -364,13 +386,25 @@
             var table = await axios.get("{{setting('admin.url_api')}}ciudades");
             $('#ciudad_select').append($('<option>', {
                 value: ciudad_id,
-                text: ' '+table_antigua.name+' '
+                text: ' '+table_antigua.data.name+' '
             }));
             for (let index = 0; index < table.data.length; index++) {
-                $('#ciudad_select').append($('<option>', {
-                    value: table.data[index].id,
-                    text: table.data[index].name
-                }));
+                if(table.data[index].id!=ciudad_id){
+                        $('#ciudad_select').append($('<option>', {
+                        value: table.data[index].id,
+                        text: table.data[index].name
+                    }));
+                }
+            }
+        }
+        async function Verification() {
+            var michofer=JSON.parse(localStorage.getItem('michofer'))
+            if(michofer.estado_verificacion){
+                $('#verification').html("<div class='input-field col s3' > <br><br> <i class='material-icons'>verified_user</i> <br> <small>verificado</small> </div>")
+
+            }
+            else{
+                $('#verification').html("<div class='input-field col s3' > <br><br> <i class='material-icons'>warning</i> <br> <small>sin verificar</small> </div>")
             }
         }
 </script>

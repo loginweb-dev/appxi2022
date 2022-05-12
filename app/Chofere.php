@@ -23,8 +23,8 @@ class Chofere extends Model
         'categoria_id',
         'estado_verificacion',
         'creditos',
-        'pin'
-
+        'pin',
+        'verificado'
     ];
 
     public function ciudad()

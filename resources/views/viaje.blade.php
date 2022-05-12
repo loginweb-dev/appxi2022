@@ -4,43 +4,57 @@
 @section('content')
 <div class="container-fluid">
     <div class="row">
-      <div class="col s12" >
-          <center>
-            <h4>Gracias por tu preferencia</h4>
-            <p>Hola, gracias por tu preferencia, APPXI esta buscando un taxi ideal para ti, espera una notificacion por whatsapp cuando este listo tu taxi</p>
-          </center>
-          <table>
-              <tbody>
-                <tr>
-                      <td>Viaje #</td>
-                      <td><div id="miid"></div></td>
-                </tr>
-                <tr>
-                    <td>Fecha</td>
-                    <td><div id="fecha"></div></td>
-                </tr>
-                <tr>
-                    <td>Cliente</td>
-                    <td><div id="cliente"></div></td>
-                </tr>
-                <tr>
-                    <td>Estado</td>
-                    <td><div id="estado"></div></td>
-                </tr>
-                <tr>
-                    <td>Precio Ofertado</td>
-                    <td><div id="p_ofertado"></div></td>
-                </tr>
-                <tr>
-                    <td>Distancia</td>
-                    <td><div id="distancia"></div></td>
-                </tr>
-                <tr>
-                    <td>Timepo</td>
-                    <td><div id="tiempo"></div></td>
-                </tr>
-              </tbody>
-          </table>
+        <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil">
+        <div class="col s12">
+            <center>
+                <h4>Gracias por tu preferencia</h4>
+                <p>Hola, gracias por tu preferencia, APPXI esta buscando un taxi ideal para ti, espera una notificacion por whatsapp cuando este listo tu taxi</p>
+            </center>
+            <table>
+                <tbody>
+                    {{-- <tr>
+                        <td>Viaje #</td>
+                        <td><div id="miid"></div></td>
+                    </tr> --}}
+                    <tr>
+                        <td>Fecha</td>
+                        <td><div id="fecha"></div></td>
+                        <td>Estado</td>
+                        <td><div id="estado"></div></td>
+                    </tr>
+                    {{-- <tr>
+                        <td>Cliente</td>
+                        <td><div id="cliente"></div></td>
+                    </tr> --}}
+                    {{-- <tr>
+                        <td>Estado</td>
+                        <td><div id="estado"></div></td>
+                    </tr> --}}
+                    <tr>
+                        <td>Precio Ofertado</td>
+                        <td><div id="p_ofertado"></div></td>
+                        <td>Distancia</td>
+                        <td><div id="distancia"></div></td>
+                    </tr>
+                    {{-- <tr>
+                        <td>Distancia</td>
+                        <td><div id="distancia"></div></td>
+                    </tr> --}}
+                    <tr>
+                        <td>Timepo</td>
+                        <td><div id="tiempo"></div></td>
+                        <td>Categoria</td>
+                        <td><div id="categoria"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col s12">
+            <br>
+            <center>
+            <a href="/historial/cliente" style="background-color: #0C2746;" class="waves-effect waves-light btn pulse"><i class="material-icons">history</i> Mi Historial</a>
+            </center>
         </div>
     </div>
 </div>
@@ -50,13 +64,15 @@
     <script>
         $('document').ready(function () {
             var viaje = JSON.parse(localStorage.getItem('viaje'))
-            $("#miid").html("<p>"+viaje.id+"</p>")
-            $("#fecha").html("<p>"+viaje.created_at+"</p>")
+            var mifecha = new Date(viaje.created_at);
+            // $("#miid").html("<span class='badge'>"+mifecha+"</span>")
+            $("#fecha").html("<span class=''>"+mifecha+"</span>")
             $("#cliente").html("<p>"+viaje.cliente.nombres+' '+viaje.cliente.apellidos+"</p>")
-            $("#estado").html("<p>"+viaje.estado.name+"</p>")
-            $("#p_ofertado").html("<p>"+viaje.precio_inicial+" Bs.</p>")
-            $("#distancia").html("<p>"+viaje.distancia+" Km</p>")
-            $("#tiempo").html("<p>"+viaje.tiempo+" Min</p>")
+            $("#estado").html("<span class='new badge blue'>"+viaje.estado.name+"</span>")
+            $("#p_ofertado").html("<span class='new badge blue'>"+viaje.precio_inicial+" Bs.</span>")
+            $("#distancia").html("<span class='new badge blue'>"+viaje.dt+" Km</span>")
+            $("#tiempo").html("<span class='new badge blue'>"+viaje.tt+" Min</span>")
+            $("#categoria").html("<span class='new badge blue'>"+viaje.categoria.name+"</span>")
         });
     </script>
 @endsection
