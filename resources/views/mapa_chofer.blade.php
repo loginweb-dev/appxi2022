@@ -3,9 +3,9 @@
 @section('css')
 
 <style>
-    #mimapa {
+    .mimapa {
         width: 100%;
-        height: 650px;
+        height: 550px;
     }
     .oferta {
         width: 100%;
@@ -30,22 +30,27 @@
 
             <div class="col s12">
                 <p>Debe ir a recoger al cliente en el lugar indicado (A), para posteriormente llevarlo a su destino (B).</p>
-                <div id="mimapa"></div>
 
 
-                <div class="col s7">
-                    <div id="distancia" class="col s6"></div>
-                    <div id="tiempo" class="col s6"></div>
+                <div id="map1"  >
+                    <div id="mimapa" class="mimapa"></div>
+                    <div id="distancia" class="col s3"></div>
+                    <div id="tiempo" class="col s3"></div>
+                    <div id="recoger_cliente" class="col s6"></div>
+                    <div id="text_cancelar" class="col s7"></div>
+                    <div id="boton_cancelar" class="col s5"></div>
                 </div>
 
-                <div id="recoger_cliente" class="col s5"></div>
-
-                <div id="detalles_2" class="col s5" hidden></div>
-
-                <div>
-                    <div id="detalles_3" class="col s7"></div>
-                    <div id="detalles_4" class="col s5"></div>
+                <div id="map2" hidden>
+                    <div id="mimapa2" class="mimapa"></div>
+                    <div id="terminar_viaje" class="col s6" ></div>
+                    <div id="distancia2" class="col s3"></div>
+                    <div id="tiempo2" class="col s3"></div>
+                    <div id="text_cancelar2" class="col s7"></div>
+                    <div id="boton_cancelar2" class="col s5"></div>
                 </div>
+
+
 
             </div>
 
@@ -58,140 +63,134 @@
 
 @section('javascript')
     <script>
+        var map;
+        var marker;
         $('document').ready(function () {
-
             cargar();
-
-            // mostrar();
+            var options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+            };
+            navigator.geolocation.watchPosition(success, error2, options);
         });
 
-        async function mostrar() {
 
-            var michofer = JSON.parse(localStorage.getItem('michofer'))
-            var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
-            var consulta_viaje_disponible= await axios("{{ setting('admin.url_api')}}chofer_viaje_consulta/"+chofer.data.id)
-
-            var miul=''
-            miul= miul+"<div id='mioferta' class='oferta' ><div id='mimapa' class='mimapa' ></div><div class='col s7'></div><div class='col s5'> <button class='btn waves-effect waves-light' type='submit' onclick='conluir_viaje("+consulta_viaje_disponible.data.id+")' name='action'>Finalizado<i class='material-icons right'>send</i></button>           </div></div>"
-            miul=miul+"<div id='detalles'><div class='col s7'><label for='text_detalle'>Detalle Cancelación</label><input placeholder='Ingrese referencia' id='text_detalle' type='text'  class='validate'></div><div class='col s5'>   <br><a class=' waves-effect waves-light btn red' onclick='cancelar_viaje("+consulta_viaje_disponible.data.id+")'>Cancelar</a> </div></div>"
-            $("#milist").html(miul)
-
-
-
-            //detalles_viaje(consulta_viaje_disponible.data.id)
-        }
-
-        async function mostrar2() {
+        async function mostrar_recogiendo() {
             var michofer = JSON.parse(localStorage.getItem('michofer'))
             var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
             var consulta_viaje_disponible= await axios("{{ setting('admin.url_api')}}chofer_viaje_consulta/"+chofer.data.id)
 
             var distancia=''
-            distancia=distancia+"<label for='text_distancia'>Distancia Aproximada</label><input id='text_distancia' type='text'  class='validate' readonly>"
+            distancia=distancia+"<label for='text_distancia1'>Distancia Aproximada</label><input id='text_distancia1' type='text'  class='validate' readonly>"
             $("#distancia").html(distancia)
 
             var tiempo=''
-            tiempo=tiempo+"<label for='text_tiempo'>Tiempo Aproximado</label><input id='text_tiempo' type='text'  class='validate' readonly>"
+            tiempo=tiempo+"<label for='text_tiempo1'>Tiempo Aproximado</label><input id='text_tiempo1' type='text'  class='validate' readonly>"
             $("#tiempo").html(tiempo)
 
             var recoger_cliente=''
-            recoger_cliente=recoger_cliente+"<br><button class='btn waves-effect waves-light' type='submit' onclick='cliente_recogido("+consulta_viaje_disponible.data.id+")' name='action'>Recogido<i class='material-icons right'>send</i></button>"
+            recoger_cliente=recoger_cliente+"<br><button class='btn waves-effect waves-light' type='submit' onclick='cliente_recogido("+consulta_viaje_disponible.data.id+")' name='action'>Recoger<i class='material-icons right'>send</i></button>"
             $('#recoger_cliente').html(recoger_cliente)
 
+            var text_cancelar=''
+            text_cancelar=text_cancelar+"<label for='text_detalle'>Detalle Cancelación</label><input placeholder='Ingrese referencia' id='text_detalle' type='text'  class='validate'></div><div class='col s5'>"
+            $("#text_cancelar").html(text_cancelar)
 
-            var detalles_2=''
-            detalles_2= detalles_2+"<br><button class='btn waves-effect waves-light' type='submit' onclick='conluir_viaje("+consulta_viaje_disponible.data.id+")' name='action'>Finalizado<i class='material-icons right'>send</i></button>"
-            $("#detalles_2").html(detalles_2)
-
-            var detalles_3=''
-            detalles_3=detalles_3+"<label for='text_detalle'>Detalle Cancelación</label><input placeholder='Ingrese referencia' id='text_detalle' type='text'  class='validate'></div><div class='col s5'>"
-            $("#detalles_3").html(detalles_3)
-
-            var detalles_4=''
-            detalles_4=detalles_4+"<br><a class=' waves-effect waves-light btn red' onclick='cancelar_viaje("+consulta_viaje_disponible.data.id+")'>Cancelar</a> "
-            $("#detalles_4").html(detalles_4)
+            var boton_cancelar=''
+            boton_cancelar=boton_cancelar+"<br><a class=' waves-effect waves-light btn red' onclick='cancelar_viaje("+consulta_viaje_disponible.data.id+")'>Cancelar</a> "
+            $("#boton_cancelar").html(boton_cancelar)
 
         }
 
-        async function mostrar3() {
+        async function mostrar_llevandoadestino() {
             var michofer = JSON.parse(localStorage.getItem('michofer'))
             var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
-            var consulta_viaje_disponible= await axios("{{ setting('admin.url_api')}}chofer_viaje_consulta/"+chofer.data.id)
+            var viaje_encurso= await axios("{{ setting('admin.url_api')}}viaje_chofer_encurso/"+chofer.data.id)
 
-            var informacion_viaje=''
-            informacion_viaje= informacion_viaje+"<label for='text_detalle'>Detalle Cancelación</label><input placeholder='Ingrese referencia' id='text_detalle' type='text'  class='validate'>"
-            $("#informacion_viaje").html(informacion_viaje)
+            var distancia2=''
+            distancia2=distancia2+"<label for='text_distancia2'>Distancia Aproximada</label><input id='text_distancia2' type='text'  class='validate' readonly>"
+            $("#distancia2").html(distancia2)
+
+            var tiempo2=''
+            tiempo2=tiempo2+"<label for='text_tiempo2'>Tiempo Aproximado</label><input id='text_tiempo2' type='text'  class='validate' readonly>"
+            $("#tiempo2").html(tiempo2)
+
+            var terminar_viaje=''
+            terminar_viaje= terminar_viaje+"<br><button class='btn waves-effect waves-light' type='submit' onclick='conluir_viaje("+viaje_encurso.data.id+")' name='action'>Finalizar<i class='material-icons right'>send</i></button>"
+            $("#terminar_viaje").html(terminar_viaje)
+
+            var text_cancelar2=''
+            text_cancelar2=text_cancelar2+"<label for='text_detalle'>Detalle Cancelación</label><input placeholder='Ingrese referencia' id='text_detalle' type='text'  class='validate'></div><div class='col s5'>"
+            $("#text_cancelar2").html(text_cancelar2)
+
+            var boton_cancelar2=''
+            boton_cancelar2=boton_cancelar2+"<br><a class=' waves-effect waves-light btn red' onclick='cancelar_viaje("+viaje_encurso.data.id+")'>Cancelar</a> "
+            $("#boton_cancelar2").html(boton_cancelar2)
 
         }
 
         async function cargar() {
             var michofer = JSON.parse(localStorage.getItem('michofer'))
             var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
-            var viaje_encurso=await  await axios("{{ setting('admin.url_api')}}viaje_chofer_encurso/"+chofer.data.id)
+            var viaje_encurso=  await axios("{{ setting('admin.url_api')}}viaje_chofer_encurso/"+chofer.data.id)
             var consulta_viaje_disponible= await axios("{{ setting('admin.url_api')}}chofer_viaje_consulta/"+chofer.data.id)
 
-
-
             if(consulta_viaje_disponible.data){
+                mostrar_recogiendo();
+
                 var options = {
                     enableHighAccuracy: true,
                     timeout: 5000,
                     maximumAge: 0
                 };
                 navigator.geolocation.getCurrentPosition(set_origen, error, options);
-
-                mostrar2();
+                mostrar_llevandoadestino();
+                set_origen2(consulta_viaje_disponible.data.id);
             }
-            if(viaje_encurso.data){
-                console.log("hola, si entré")
-                var options = {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                };
-                navigator.geolocation.getCurrentPosition(set_origen2, error, options);
-                //liente_recogido();
+            else if(viaje_encurso.data){
+                $("#map2").attr('hidden', false);
+                $("#map1").attr('hidden', true);
+                mostrar_llevandoadestino();
+                set_origen2(viaje_encurso.data.id);
             }
-
+            else{
+                location.href='/viajes/monitor'
+            }
         }
 
         async function cliente_recogido(id) {
             var recogido= await axios("{{setting('admin.url_api')}}cliente_recogido/"+id)
-
-            $("#detalles_2").attr('hidden', false);
-            $("#recoger_cliente").attr('hidden', true);
-
+            var viaje=await axios("{{setting('admin.url_api')}}viaje/"+id)
+            var cliente=await axios("{{setting('admin.url_api')}}cliente_por_id/"+viaje.data.cliente_id)
+            var mensaje_cliente="Su chofer ya llegó, porfavor salga para ir a su destino correspondiente."
+            var wpp_mensaje_cliente=await axios("https://chatbot.appxi.net/?type=text&phone="+cliente.data.telefono+"&message="+mensaje_cliente)
             cargar();
-
-
-            // var options = {
-            //     enableHighAccuracy: true,
-            //     timeout: 5000,
-            //     maximumAge: 0
-            // };
-            // navigator.geolocation.getCurrentPosition(set_origen, error, options);
-            set_origen2();
-
-
-            // mostrar3()
-            // ruta2()
         }
 
 
         async function conluir_viaje(id) {
-            console.log("Concluido: "+id)
             var viaje_concluido=await axios("{{ setting('admin.url_api')}}concluir_viaje/"+id)
             if(viaje_concluido){
                 var michofer = JSON.parse(localStorage.getItem('michofer'))
                 var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
-
+                var liberar_cliente= await axios("{{setting('admin.url_api')}}liberar_cliente/"+id)
                 var estado= await axios("{{setting('admin.url_api')}}update_estado/chofer/"+chofer.data.id+"/"+1)
+
+                var viaje=await axios("{{setting('admin.url_api')}}viaje/"+id)
+                var cliente=await axios("{{setting('admin.url_api')}}cliente_por_id/"+viaje.data.cliente_id)
+                var mensaje_cliente="Su viaje fue conlcuido con éxito, esperamos que el servicio haya sido de su agrado, puede puntuar la atención del chofer en la aplicación"
+                var wpp_mensaje_cliente=await axios("https://chatbot.appxi.net/?type=text&phone="+cliente.data.telefono+"&message="+mensaje_cliente)
+
+                var mensaje_chofer="Su viaje fue concluido con éxito, ya se encuentra disponible para realizar otros, recuerde que el cliente puede calificar la experiencia del viaje."
+                var wpp_mensaje_chofer= await axios("https://chatbot.appxi.net/?type=text&phone="+michofer.telefono+"&message="+mensaje_chofer)
+
                 location.href='/viajes/monitor'
             }
         }
 
         async function cancelar_viaje(id) {
-            console.log("Cancelado: "+id)
+
             var detalle=$('#text_detalle').val() ? $('#text_detalle').val():null
 
             if(detalle){
@@ -200,7 +199,17 @@
                     var michofer = JSON.parse(localStorage.getItem('michofer'))
                     var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
 
+                    var liberar_cliente= await axios("{{setting('admin.url_api')}}liberar_cliente/"+id)
                     var estado= await axios("{{setting('admin.url_api')}}update_estado/chofer/"+chofer.data.id+"/"+1)
+
+                    var viaje=await axios("{{setting('admin.url_api')}}viaje/"+id)
+                    var cliente=await axios("{{setting('admin.url_api')}}cliente_por_id/"+viaje.data.cliente_id)
+                    var mensaje_cliente="Su viaje fue cancelado por el chofer por el siguiente motivo: "+detalle+" nos disculpamos por las molestias, puede solicitar otro viaje inmediatamente."
+                    var wpp_mensaje_cliente=await axios("https://chatbot.appxi.net/?type=text&phone="+cliente.data.telefono+"&message="+mensaje_cliente)
+
+                    var mensaje_chofer="Su viaje fue cancelado por usted por el siguiente motivo: "+detalle+" %0A Esperamos que se resuelvan sus inconvenientes, recordarle que se encuentra otra vez habilitado para realizar otro viaje."
+                    var wpp_mensaje_chofer= await axios("https://chatbot.appxi.net/?type=text&phone="+michofer.telefono+"&message="+mensaje_chofer)
+
                     location.href='/viajes/monitor'
                 }
             }
@@ -210,112 +219,67 @@
 
         }
 
-        //ex detalle_viaje
-        async function ruta2(data) {
 
-            //$("#mioferta").attr('hidden', false);
-            var table= await axios("{{setting('admin.url_api')}}viaje/"+data)
-            var origen= await axios("{{setting('admin.url_api')}}ubicacion/"+table.data.origen_location)
-            var destino= await axios("{{setting('admin.url_api')}}ubicacion/"+table.data.destino_location)
-
-            var myLatLng = { lat: parseFloat(origen.data.latitud), lng: parseFloat(origen.data.longitud) }
-            var destinoLatLong= { lat: parseFloat(destino.data.latitud), lng:parseFloat(destino.data.longitud)}
-            var map = new google.maps.Map(document.getElementById("mimapa"), {
-                    center: destinoLatLong,
-                    zoom: 13,
-            });
-            var viaje = {
-                origin: myLatLng,
-                destination: destinoLatLong,
-                travelMode: google.maps.DirectionsTravelMode.DRIVING
-            };
-            var directionsDisplay = new google.maps.DirectionsRenderer();
-            directionsDisplay.suppressMarkers = true;
-            var directionsService = new google.maps.DirectionsService();
-            directionsDisplay.setMap(map);
-
-            directionsService.route(viaje, async function(response, status) {
-                if (status == google.maps.DirectionsStatus.OK) {
-                    directionsDisplay.setDirections(response)
-                    $("#text_distancia").val(response.routes[0].legs[0].distance.text);
-                    $("#text_tiempo").val(response.routes[0].legs[0].duration.text);
-                }
-            });
-        }
 
         function error(err) {
             alert(err.message+" "+err.code+" - Habilita tu Sensor GPS")
             console.warn('ERROR(' + err.code + '): ' + err.message)
+            location.reload()
+        }
+
+        function error2(err) {
+            console.warn('ERROR(' + err.code + '): ' + err.message)
+            // location.reload()
         }
 
         function set_origen(pos) {
-            console.log(pos)
             var crd = pos.coords
             var radio = pos.accuracy
             var myLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-            var map = new google.maps.Map(document.getElementById("mimapa"), {
+            map = new google.maps.Map(document.getElementById("mimapa"), {
                 center: myLatLng,
                 zoom: 15,
             });
-            var marker1 = new google.maps.Marker({
+            marker = new google.maps.Marker({
                 animation: google.maps.Animation.DROP,
                 position: myLatLng,
-                map,
-                label: "YO"
+                map
             });
-
+            socket.emit('traking', {lat: pos.coords.latitude, lng: pos.coords.longitude})
             ruta1(myLatLng, map)
-
-            // var op1=consulta_viaje_disponible();
-            // var op2=viaje_encurso();
-            // if(op1){
-            //     ruta1(myLatLng, map)
-            // }
-            // else{
-            //     ruta2(op2)
-            // }
-
-
-
-
         }
 
-        function set_origen2(pos){
-            console.log(pos)
-            var crd = pos.coords
-            var radio = pos.accuracy
-            var myLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-            var map = new google.maps.Map(document.getElementById("mimapa"), {
+        function success(pos) {
+            var crd = pos.coords;
+            socket.emit('traking', {lat: pos.coords.latitude, lng: pos.coords.longitude})
+            marker.setPosition(new google.maps.LatLng( pos.coords.latitude, pos.coords.longitude ) )
+            map.panTo( new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude ) )
+        };
+
+
+        async function set_origen2(data){
+            var table= await axios("{{setting('admin.url_api')}}viaje/"+data)
+            var origen= await axios("{{setting('admin.url_api')}}ubicacion/"+table.data.origen_location)
+            var destino= await axios("{{setting('admin.url_api')}}ubicacion/"+table.data.destino_location)
+            var myLatLng = { lat: parseFloat(origen.data.latitud), lng: parseFloat(origen.data.longitud) }
+            var destinoLatLong= { lat: parseFloat(destino.data.latitud), lng:parseFloat(destino.data.longitud)}
+            map = new google.maps.Map(document.getElementById("mimapa2"), {
                 center: myLatLng,
                 zoom: 15,
             });
-            var marker1 = new google.maps.Marker({
+            marker = new google.maps.Marker({
                 animation: google.maps.Animation.DROP,
                 position: myLatLng,
-                map,
-                label: "YO"
+                map
             });
-
-            //ruta1(myLatLng, map)
-
-            var op2=viaje_encurso();
-            ruta2(op2)
-
-            // var op1=consulta_viaje_disponible();
-            // var op2=viaje_encurso();
-            // if(op1){
-            //     ruta1(myLatLng, map)
-            // }
-            // else{
-            //     ruta2(op2)
-            // }
+            socket.emit('traking', {lat: parseFloat(origen.data.latitud), lng: parseFloat(origen.data.longitud)})
+            ruta2(myLatLng, destinoLatLong, map)
         }
 
         async function consulta_viaje_disponible(){
             var michofer = JSON.parse(localStorage.getItem('michofer'))
             var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
             var consulta_viaje_disponible= await axios("{{ setting('admin.url_api')}}chofer_viaje_consulta/"+chofer.data.id)
-
             if(consulta_viaje_disponible.data){
                 return true;
             }
@@ -328,7 +292,6 @@
             var michofer = JSON.parse(localStorage.getItem('michofer'))
             var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
             var viaje_encurso=await  await axios("{{ setting('admin.url_api')}}viaje_chofer_encurso/"+chofer.data.id)
-
             return viaje_encurso;
         }
 
@@ -336,19 +299,10 @@
             var michofer = JSON.parse(localStorage.getItem('michofer'))
             var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
             var consulta_viaje_disponible= await axios("{{ setting('admin.url_api')}}chofer_viaje_consulta/"+chofer.data.id)
-
             var data=consulta_viaje_disponible.data.id
-
-
             var table= await axios("{{setting('admin.url_api')}}viaje/"+data)
-
             var destino= await axios("{{setting('admin.url_api')}}ubicacion/"+table.data.origen_location)
-
             var destinoLatLong= { lat: parseFloat(destino.data.latitud), lng:parseFloat(destino.data.longitud)}
-            // var map = new google.maps.Map(document.getElementById("mimapa"), {
-            //         center: destinoLatLong,
-            //         zoom: 15,
-            // });
             var viaje = {
                 origin: myLatLng,
                 destination: destinoLatLong,
@@ -358,26 +312,39 @@
             directionsDisplay.suppressMarkers = true;
             var directionsService = new google.maps.DirectionsService();
             directionsDisplay.setMap(map);
-
-            var marker1 = new google.maps.Marker({
+            marker = new google.maps.Marker({
                 animation: google.maps.Animation.DROP,
                 position: destinoLatLong,
                 map,
-                label: "Cliente"
+                icon: 'https://appxi.net//storage/taxi-icon-5_1.png'
             });
-
             directionsService.route(viaje, async function(response, status) {
                 if (status == google.maps.DirectionsStatus.OK) {
                     directionsDisplay.setDirections(response)
-                    $("#text_distancia").val(response.routes[0].legs[0].distance.text);
-                    $("#text_tiempo").val(response.routes[0].legs[0].duration.text);
+                    $("#text_distancia1").val(response.routes[0].legs[0].distance.text);
+                    $("#text_tiempo1").val(response.routes[0].legs[0].duration.text);
                 }
             });
-
-
         }
 
-
+        async function ruta2(myLatLng, destinoLatLong,map) {
+            var viaje = {
+                origin: myLatLng,
+                destination: destinoLatLong,
+                travelMode: google.maps.DirectionsTravelMode.DRIVING
+            };
+            var directionsDisplay = new google.maps.DirectionsRenderer();
+            directionsDisplay.suppressMarkers = true;
+            var directionsService = new google.maps.DirectionsService();
+            directionsDisplay.setMap(map);
+            directionsService.route(viaje, async function(response, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    directionsDisplay.setDirections(response)
+                    $("#text_distancia2").val(response.routes[0].legs[0].distance.text);
+                    $("#text_tiempo2").val(response.routes[0].legs[0].duration.text);
+                }
+            });
+        }
 
     </script>
 

@@ -41,9 +41,9 @@
                         <td><div id="distancia"></div></td>
                     </tr> --}}
                     <tr>
-                        <td>Timepo</td>
+                        <td>Tiempo</td>
                         <td><div id="tiempo"></div></td>
-                        <td>Categoria</td>
+                        <td>Categoría</td>
                         <td><div id="categoria"></div></td>
                     </tr>
                 </tbody>
@@ -70,8 +70,8 @@
             $("#cliente").html("<p>"+viaje.cliente.nombres+' '+viaje.cliente.apellidos+"</p>")
             $("#estado").html("<span class='new badge blue'>"+viaje.estado.name+"</span>")
             $("#p_ofertado").html("<span class='new badge blue'>"+viaje.precio_inicial+" Bs.</span>")
-            $("#distancia").html("<span class='new badge blue'>"+viaje.dt+" Km</span>")
-            $("#tiempo").html("<span class='new badge blue'>"+viaje.tt+" Min</span>")
+            $("#distancia").html("<span class='new badge blue'>"+viaje.dt+"</span>")
+            $("#tiempo").html("<span class='new badge blue'>"+viaje.tt+"</span>")
             $("#categoria").html("<span class='new badge blue'>"+viaje.categoria.name+"</span>")
         });
     </script>

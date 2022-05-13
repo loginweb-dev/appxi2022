@@ -69,6 +69,9 @@
             // M.toast({html: 'Bienvenido! '+miuser.nombres+' '+miuser.apellidos})
             $("#miul").attr('hidden', false)
             get_list()
+            socket.emit('traking', {lat: -14.8350387349957, lng: -64.9041263226692})
+            socket.on("contraoferta","Contra oferta")
+            // socket.emit('traking', {})
         } else {
             $('#modal1').modal('open')
         }
@@ -80,14 +83,18 @@
         var miul = ''
         for (let index = 0; index < milist.data.length; index++) {
             var img = milist.data[index].cliente.perfil ? milist.data[index].cliente.perfil : "@php echo setting('cliente.perfil_default')  @endphp"
-            miul = miul + "<li class='collection-item avatar'><img src='{{ setting('admin.url_storage') }}"+img+"' class='circle'><p>Viaje #"+milist.data[index].id+"<span class='badge' data-badge-caption='"+milist.data[index].estado.name+"' style='background-color: #0C2746;'></span></p><span class='title'>"+milist.data[index].cliente.nombres+' '+milist.data[index].cliente.apellidos+"</span><p>Fecha: "+milist.data[index].published+"</p><p>Precio Ofertado: "+milist.data[index].precio_inicial+" Bs.</p><p>Distancia: "+milist.data[index].distancia+" Km</p><p>Tiempo: "+milist.data[index].tiempo.toFixed(2)+" Minutos</p></li>"
+            miul = miul + "<li class='collection-item avatar'><img src='{{ setting('admin.url_storage') }}"+img+"' class='circle'><p>Viaje #"+milist.data[index].id+"<span class='badge' data-badge-caption='"+milist.data[index].estado.name+"' style='background-color: #0C2746;'></span></p><span class='title'>"+milist.data[index].cliente.nombres+' '+milist.data[index].cliente.apellidos+"</span><p>Fecha: "+milist.data[index].published+"</p><p>Precio Ofertado: "+milist.data[index].precio_inicial+" Bs.</p><p>Distancia: "+milist.data[index].dt+"</p><p>Tiempo: "+milist.data[index].tt+"</p><p>Origen Detalle: "+milist.data[index].origen.descripcion+"</p><p>Destino Detalle: "+milist.data[index].destino.descripcion+"</p><p>Vehiculo: "+milist.data[index].categoria.name+"</p></li>"
 
             if (milist.data[index].status_id == 2) {
                 miul = miul + "<li class='collection-item'><span>Ofertas</span><a class='secondary-content' onclick='get_negociaciones("+milist.data[index].id+")'><i class='material-icons'>list</i></a></li>"
             }
-            miul = miul + "<li class='collection-item avatar'><span>Ver mapa: </span><a class='secondary-content' onclick='get_negociaciones("+milist.data[index].id+")'><i class='material-icons'>map</i></a></li>"
+            miul = miul + "<li class='collection-item avatar'><span>Ver mapa: </span><a class='secondary-content' onclick='get_mapa("+milist.data[index].id+")'><i class='material-icons'>map</i></a></li>"
         }
         $("#milist").html(miul)
+    }
+
+    async function get_mapa(viaje_id) {
+        location.href = "/mapa/cliente/"+viaje_id
     }
 
     async function get_negociaciones(id) {
@@ -95,9 +102,15 @@
         console.log(nego.data)
         $("#milist_detalle tbody tr").remove();
         for (let index = 0; index < nego.data.length; index++) {
-            $("#milist_detalle").append("<tr><td>"+nego.data[index].id+"</td><td>"+nego.data[index].published+"</td><td>"+nego.data[index].chofer.nombres+" "+nego.data[index].chofer.apellidos+"</td><td>"+nego.data[index].precio_contraofertado+" Bs.</td><td><a onclick='set_viaje("+nego.data[index].viaje_id+","+nego.data[index].id+", "+nego.data[index].chofer_id+", "+nego.data[index].precio_contraofertado+")' style='background-color: #0C2746;' class='waves-effect waves-light btn-sm btn'><i class='material-icons'>done</i></a></td></tr>")
+            $("#milist_detalle").append("<tr><td>"+nego.data[index].id+"</td><td>"+nego.data[index].published+"</td><td>"+nego.data[index].chofer.nombres+" "+nego.data[index].chofer.apellidos+"</td><td>"+nego.data[index].precio_contraofertado+" Bs.</td><td><a onclick='set_viaje("+nego.data[index].viaje_id+","+nego.data[index].id+", "+nego.data[index].chofer_id+", "+nego.data[index].precio_contraofertado+")' style='background-color: #0C2746;' class='waves-effect waves-light btn-sm btn'><i class='material-icons'>done</i></a></td><td><a onclick='delete_nego("+nego.data[index].id+")' style='background-color: #F82F47;' class='waves-effect waves-light btn-sm btn'><i class='material-icons'>close</i></a></td</tr>")
         }
         $('#modal2').modal('open')
+    }
+
+
+    async function delete_nego(id) {
+        table= await axios("{{setting('admin.url_api')}}delete_nego/"+id)
+        location.reload()
     }
 
     async function set_viaje(viaje_id, nego_id, chofer_id, precio_final) {
@@ -120,6 +133,8 @@
             var wpp= await axios("https://chatbot.appxi.net/?type=text&phone="+chofer.data.telefono+"&message="+mensaje)
             var mensaje="https://appxi.net"
             var wpp= await axios("https://chatbot.appxi.net/?type=text&phone="+chofer.data.telefono+"&message="+mensaje)
+            //socket
+            socket.emit("viaje_aprobado", mensaje)
             location.href = '/mapa/cliente'
         }
         else{

@@ -29,7 +29,6 @@ Route::get('/welcome', function () {
     return view('welcome');
 });
 
-
 Route::get('perfil/cliente', function () {
     return view('perfil_cliente');
 });

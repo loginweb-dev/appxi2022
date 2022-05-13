@@ -67,18 +67,18 @@
                     <input id="latitud2" type="text" class="validate" hidden>
                     <input id="longitud2" type="text" class="validate" hidden>
                     <div class="row">
-                        <div class="input-field col s4">
+                        <div class="input-field col s6">
                             <label for="distancia">Distancia</label>
                             <input placeholder="" id="distancia" type="text" class="validate" readonly>
                         </div>
-                        <div class="input-field col s4">
+                        <div class="input-field col s6">
                             <label for="distancia">Tiempo</label>
                             <input placeholder="" id="tiempo" type="text" class="validate" readonly>
                         </div>
-                        <div class="input-field col s4">
+                        {{-- <div class="input-field col s4">
                             <label for="precio_aprox">Taximetro Bs.</label>
                             <input placeholder="" id="precio_aprox" type="number" class="validate" value="10" readonly>
-                        </div>
+                        </div> --}}
 
                         <div class="input-field col s6">
                             <label for="text_start">Origen</label>
@@ -113,7 +113,7 @@
                                 <strong>Pasarela de Pago</strong>
                             </center>
                         </div>
-                        <div class="input-field col s6">
+                        <div class="input-field col s4">
                             @php
                                 $pagos = App\Pasarela::all();
                             @endphp
@@ -123,7 +123,12 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="input-field col s6">
+                        <div class="input-field col s4">
+                            <label for="precio_aprox">Taximetro Bs.</label>
+                            <input placeholder="" id="precio_aprox" type="number" class="validate" value="10" readonly>
+                        </div>
+
+                        <div class="input-field col s4">
                             <input id="precio_ofertado" type="number" class="validate">
                             <label for="precio_ofertado">Precio Ofertado Bs.</label>
                         </div>
@@ -154,7 +159,7 @@
 
                         <div class="col s12">
                             <center>
-                                <a style="background-color: #0C2746;" href="#" class="waves-effect waves-light btn pulse" onclick="save_viaje()"><i class="material-icons">edit</i> Enviar Solicitud</a>
+                                <a style="background-color: #0C2746;" id="btn_save" class="waves-effect waves-light btn pulse" onclick="save_viaje()"><i class="material-icons">edit</i> Enviar Solicitud</a>
                             </center>
                             <p>Luego de enviar tu solicitud de viaje, APPXI te notificara cuando este listo.</p>
                         </div>
@@ -205,7 +210,7 @@
             var miuser = await axios("{{setting('admin.url_api')}}cliente_por_id/"+cliente_id)
             // console.log(miuser.data)
             if (miuser.data.estado) {
-                location.href = '/historial/cliente'
+                location.href = '/mapa/cliente'
             } else {
                 var options = {
                     enableHighAccuracy: true,
@@ -235,45 +240,11 @@
                 center: myLatLng,
                 zoom: 11,
             });
-            // var marker1 = new google.maps.Marker({
-            //     animation: google.maps.Animation.DROP,
-            //     draggable: true,
-            //     position: myLatLng,
-            //     map,
-            //     label: "OR"
-            // });
-            // google.maps.event.addListener(marker1, 'dragend', function (evt) {
-            //     $("#latitud").val(evt.latLng.lat());
-            //     $("#longitud").val(evt.latLng.lng());
-            //     map.panTo(evt.latLng);
-            // });
-            // $("#latitud").val(pos.coords.latitude);
-            // $("#longitud").val(pos.coords.longitude);
-
             // // 2 marker
             var myLatLng2 = { lat: -14.8350387349957, lng: -64.9041263226692 }
-            // var marker2 = new google.maps.Marker({
-            //     animation: google.maps.Animation.DROP,
-            //     draggable: true,
-            //     position: myLatLng2,
-            //     map,
-            //     label: "DE"
-            // });
-            // google.maps.event.addListener(marker2, 'dragend', function (evt) {
-            //     // $("#latitud").val(evt.latLng.lat());
-            //     // $("#longitud").val(evt.latLng.lng());
-            //     map.panTo(evt.latLng);
-            // });
-
-
-            // direccion
-            // directionsService = new google.maps.DirectionsService();
             directionsDisplay = new google.maps.DirectionsRenderer();
             directionsService = new google.maps.DirectionsService();
             directionsDisplay.setMap(map);
-
-            // var start = '37.7683909618184, -122.51089453697205';
-            // var end = '41.850033, -87.6500523';
             var viaje = {
                 origin:myLatLng,
                 destination:myLatLng2,
@@ -289,21 +260,14 @@
                     // txtDir += myRoute.legs[0].steps[i].instructions+"<br />";
                     // }
                     // document.getElementById('directions').innerHTML = txtDir;
-                    console.log(response.routes[0].legs[0].distance.text)
-                    console.log(response.routes[0].legs[0].duration.text)
-                    console.log(myRoute)
                     $("#distancia").val(response.routes[0].legs[0].distance.text);
                     $("#tiempo").val(response.routes[0].legs[0].duration.text);
                     $("#text_start").val(response.routes[0].legs[0].start_address);
                     $("#text_end").val(response.routes[0].legs[0].end_address);
-                    console.log(response.routes[0].legs[0].start_address)
-                    console.log(response.routes[0].legs[0].end_address)
                     map.setCenter(new google.maps.LatLng(myLatLng.lat, myLatLng.lng));
                 }
             });
-            // const center = new google.maps.LatLng(myLatLng.lat, myLatLng.lng);
             map.setCenter(new google.maps.LatLng(myLatLng.lat, myLatLng.lng));
-
             google.maps.event.addListener(map, 'click', newmarker);
         }
 
@@ -507,6 +471,7 @@
             var cantidad_objetos = $("#cantidad_objetos").val()
             var cantidad_viajeros = $("#cantidad_viajeros").val()
             if (parseFloat(precio_ofertado) > 0) {
+                $('#btn_save').attr('hidden', true)
                 var miuser = JSON.parse(localStorage.getItem('miuser'))
                 var micategoria = JSON.parse(localStorage.getItem('micategoria'))
                 var origen = JSON.parse(localStorage.getItem('origen'))
@@ -528,18 +493,32 @@
                     'cantidad_viajeros': cantidad_viajeros,
                     'dt': destino.dt,
                     'tt': destino.tt,
-                    'origen_g': destino.origen_g,
-                    'destino_g': destino.destino_g
+                    'origen_g': null,
+                    'destino_g': null
                 }
+                // console.log(newviaje)
                 var viaje = await axios("{{setting('admin.url_api')}}viaje/save/"+JSON.stringify(newviaje))
                 localStorage.setItem('viaje', JSON.stringify(viaje.data))
                 var mensaje="Hola, gracias por tu preferencia, APPXI esta buscando un taxi ideal para ti, espera una notificacion por whatsapp cuando este listo tu taxi."
                 var wpp= await axios("https://chatbot.appxi.net/?type=text&phone="+miuser.telefono+"&message="+mensaje)
                 var miscoket = await socket.emit('nuevo_viaje', mensaje)
+
+                var midatachofer={
+                    'ciudad_id':miuser.ciudad.id,
+                    'categoria_id':micategoria.id
+                }
+                var choferes=await axios.get("{{setting('admin.url_api')}}choferes/libres/"+JSON.stringify(midatachofer))
+
+                for (let index = 0; index < choferes.data.length; index++) {
+                    var mensaje_chofer="Hola, hay un nuevo viaje disponible, ofertado con el precio de:"+precio_ofertado+"Bs.%0A Ingresa a la app para solicitar tu servicio y si deseas hacer una contraoferta.%0A"
+                    var url_appxi="https://appxi.net/viajes/monitor"
+                    var wpp_chofer=await axios("https://chatbot.appxi.net/?type=text&phone="+choferes.data[index].telefono+"&message="+mensaje_chofer+"%0A"+url_appxi)
+                }
                 localStorage.removeItem('micategoria');
                 localStorage.removeItem('origen');
                 localStorage.removeItem('destino');
                 location.href = "/viaje/"+viaje.data.id
+
             } else {
                 M.toast({html : 'Ingresa un precio valido'})
             }

@@ -5,7 +5,7 @@
     <style>
     #map {
         width: 100%;
-        height: 400px;
+        height: 650px;
     }
     </style>
 @endsection
@@ -16,10 +16,9 @@
     <div class="row">
         <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil">
         <div class="col s12">
-            <center>
+            {{-- <center>
                 <h4>Mapa del Viaje</h4>
-            </center>
-
+            </center> --}}
             <div id="map"></div>
         </div>
     </div>
@@ -29,9 +28,40 @@
 
 @section('javascript')
     <script>
+        var map;
+        var marker;
+        socket.on('traking', (obj) =>{
+                console.log(obj)
+                marker.setPosition(new google.maps.LatLng(parseFloat(obj.lat), parseFloat(obj.lng) ) )
+                map.panTo( new google.maps.LatLng( parseFloat(obj.lat), parseFloat(obj.lng) ) )
+            })
         $('document').ready(function () {
+            get_viaje()
             set_origen()
+
+            var miuser = JSON.parse(localStorage.getItem('miuser'))
+            var myLatLng = { lat: parseFloat(-14.8350387349957), lng: parseFloat(-64.9041263226692) }
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: myLatLng,
+                zoom: 16,
+            });
+            marker = new google.maps.Marker({
+                position: myLatLng,
+                map: map,
+                icon: 'https://appxi.net//storage/taxi-icon-5_1.png'
+            });
         });
+
+        async function get_viaje() {
+            // var miviaje = JSON.parse(localStorage.getItem('viaje'))
+            // var viaje = await axios("{{ setting('admin.url_api') }}viaje/"+miviaje.id)
+            // console.log(viaje.data)
+            // if (viaje.data) {
+
+            // } else {
+
+            // }
+        }
 
         function set_origen() {
             var miuser = JSON.parse(localStorage.getItem('miuser'))

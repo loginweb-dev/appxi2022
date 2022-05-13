@@ -58,4 +58,12 @@ class Viaje extends Model
     {
         return $this->belongsTo(Categoria::class, 'categoria_id');
     }
+    public function origen()
+    {
+        return $this->belongsTo(Ubicacione::class, 'origen_location');
+    }
+    public function destino()
+    {
+        return $this->belongsTo(Ubicacione::class, 'destino_location');
+    }
 }

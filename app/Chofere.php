@@ -31,4 +31,8 @@ class Chofere extends Model
     {
         return $this->belongsTo(Ciudade::class, 'ciudad_id');
     }
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class, 'categoria_id');
+    }
 }
