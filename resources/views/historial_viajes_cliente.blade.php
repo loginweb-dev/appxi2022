@@ -66,18 +66,17 @@
         $('.modal').modal();
         var miuser = JSON.parse(localStorage.getItem('miuser'))
         if (miuser) {
-            // M.toast({html: 'Bienvenido! '+miuser.nombres+' '+miuser.apellidos})
             $("#miul").attr('hidden', false)
             get_list()
             socket.emit('traking', {lat: -14.8350387349957, lng: -64.9041263226692})
             socket.on("contraoferta","Contra oferta")
-            // socket.emit('traking', {})
         } else {
             $('#modal1').modal('open')
         }
     });
 
     async function get_list() {
+        // var miestado = await axios("{{ setting('admin.url_api') }}cliente/viajes/"+miuser.id)
         var miuser = JSON.parse(localStorage.getItem('miuser'))
         var milist = await axios("{{ setting('admin.url_api') }}cliente/viajes/"+miuser.id)
         var miul = ''
@@ -86,9 +85,9 @@
             miul = miul + "<li class='collection-item avatar'><img src='{{ setting('admin.url_storage') }}"+img+"' class='circle'><p>Viaje #"+milist.data[index].id+"<span class='badge' data-badge-caption='"+milist.data[index].estado.name+"' style='background-color: #0C2746;'></span></p><span class='title'>"+milist.data[index].cliente.nombres+' '+milist.data[index].cliente.apellidos+"</span><p>Fecha: "+milist.data[index].published+"</p><p>Precio Ofertado: "+milist.data[index].precio_inicial+" Bs.</p><p>Distancia: "+milist.data[index].dt+"</p><p>Tiempo: "+milist.data[index].tt+"</p><p>Origen Detalle: "+milist.data[index].origen.descripcion+"</p><p>Destino Detalle: "+milist.data[index].destino.descripcion+"</p><p>Vehiculo: "+milist.data[index].categoria.name+"</p></li>"
 
             if (milist.data[index].status_id == 2) {
-                miul = miul + "<li class='collection-item'><span>Ofertas</span><a class='secondary-content' onclick='get_negociaciones("+milist.data[index].id+")'><i class='material-icons'>list</i></a></li>"
+                miul = miul + "<li class='collection-item'><span>Ofertas del viaje #"+milist.data[index].id+"</span><a class='secondary-content' onclick='get_negociaciones("+milist.data[index].id+")'><i class='material-icons'>list</i></a></li>"
             }
-            miul = miul + "<li class='collection-item avatar'><span>Ver mapa: </span><a class='secondary-content' onclick='get_mapa("+milist.data[index].id+")'><i class='material-icons'>map</i></a></li>"
+            // miul = miul + "<li class='collection-item avatar'><span>Ver mapa: </span><a class='secondary-content' onclick='get_mapa("+milist.data[index].id+")'><i class='material-icons'>map</i></a></li>"
         }
         $("#milist").html(miul)
     }
@@ -131,7 +130,7 @@
             //notificacion al chofer
             var mensaje=chofer.data.nombres+" "+chofer.data.apellidos+", el viaje ha sido solicitado y aprobado por el cliente: "+cliente.data.nombres+" "+cliente.data.apellidos+"%0A Ingresa al siguiente link para mas informacion: "
             var wpp= await axios("https://chatbot.appxi.net/?type=text&phone="+chofer.data.telefono+"&message="+mensaje)
-            var mensaje="https://appxi.net"
+            var mensaje="https://appxi.net/viajes/monitor"
             var wpp= await axios("https://chatbot.appxi.net/?type=text&phone="+chofer.data.telefono+"&message="+mensaje)
             //socket
             socket.emit("viaje_aprobado", mensaje)

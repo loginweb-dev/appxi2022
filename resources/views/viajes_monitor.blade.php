@@ -5,7 +5,7 @@
     <style>
     .mimapa {
         width: 100%;
-        height: 250px;
+        height: 400px;
     }
     .oferta {
         width: 100%;
@@ -23,11 +23,11 @@
 @section('content')
     <div class="container-fluid" id="miul" hidden>
       <div class="row">
-        <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil">
+        {{-- <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil"> --}}
           <div id="chofer_verificado" hidden>
             <div class="col s12" >
               <center>
-                <h5>Monitor de Viajes
+                <h5>
                         <div class="switch">
                             <label>
                               Ocupado
@@ -71,7 +71,7 @@
                     <input placeholder="PIN - 4 digitos" id="pin" type="number" class="validate" disabled>
                 </div>
                 <div class="col s3">
-                    <a id="btn_pin" style='background-color: #0C2746;'onclick="get_pin()" class="waves-effect waves-light btn" disabled><i class="material-icons">key</i></a>
+                    <a id="btn_pin" style='background-color: #0C2746;' onclick="get_pin()" class="waves-effect waves-light btn" disabled><i class="material-icons">key</i></a>
                 </div>
             </div>
         </div>
@@ -85,7 +85,6 @@
         $('.modal').modal();
         var michofer = JSON.parse(localStorage.getItem('michofer'))
         if (michofer) {
-            // M.toast({html: 'Bienvenido! '+michofer.nombres+' '+michofer.apellidos})
             $("#miul").attr('hidden', false);
             Verificar();
             EstadoChofer();
@@ -147,9 +146,10 @@
         var michofer = JSON.parse(localStorage.getItem('michofer'))
         var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
         var consulta_viaje_disponible= await axios("{{ setting('admin.url_api')}}chofer_viaje_consulta/"+chofer.data.id)
-        var consulta_viaje_proceso=("{{ setting('admin.url_api')}}viaje_chofer_encurso/"+chofer.data.id)
+        var consulta_viaje_proceso= await axios("{{ setting('admin.url_api')}}viaje_chofer_encurso/"+chofer.data.id)
         if(consulta_viaje_disponible.data || consulta_viaje_proceso.data){
-            M.toast({html:'No puede ver viajes disponibles hasta que acabe el que tiene en marcha'})
+            // M.toast({html:'No puede ver viajes disponibles hasta que acabe el que tiene en marcha'})
+            alert('No puede ver viajes disponibles hasta que acabe el que tiene en marcha')
             location.href='/mapa_chofer'
         }
         else{
@@ -158,15 +158,24 @@
                 'categoria_id':chofer.data.categoria.id
             }
             var milist= await axios.get("{{setting('admin.url_api')}}viajes_chofer/"+JSON.stringify(midataviaje))
-            console.log(milist.data)
+            // console.log(milist.data)
             var miul = ''
-            for (let index = 0; index < milist.data.length; index++) {
-                var img = milist.data[index].cliente.perfil ? milist.data[index].cliente.perfil : "@php echo setting('cliente.perfil_default')  @endphp"
-                miul = miul + "<li class='collection-item avatar'><p>Viaje #"+milist.data[index].id+"</p><img src='{{ setting('admin.url_storage') }}"+img+"' class='circle'><span class='title'>"+milist.data[index].cliente.nombres+' '+milist.data[index].cliente.apellidos+"</span><p>Fecha: "+milist.data[index].published+"</p><p>Precio Ofertado: "+milist.data[index].precio_inicial+" Bs.</p><p>Distancia: "+milist.data[index].dt+"</p><p>Tiempo: "+milist.data[index].tt+"</p><p>Origen: "+milist.data[index].origen.descripcion+"</p><p>Destino: "+milist.data[index].destino.descripcion+"</p><a class='secondary-content tooltipped' data-position='bottom' data-tooltip='Aceptar Viaje' onclick='aceptar_viaje("+milist.data[index].id+")'><i class='material-icons'>send</i></a><p class=''>Estado: "+milist.data[index].estado.name+"</p></li>"
+            console.log(milist.data.length )
+            if (milist.data.length > 0) {
+                for (let index = 0; index < milist.data.length; index++) {
+                    var img = milist.data[index].cliente.perfil ? milist.data[index].cliente.perfil : "@php echo setting('cliente.perfil_default')  @endphp"
+                    miul = miul + "<li class='collection-item avatar'><p>Viaje #"+milist.data[index].id+"</p><img src='{{ setting('admin.url_storage') }}"+img+"' class='circle'><span class='title'>"+milist.data[index].cliente.nombres+' '+milist.data[index].cliente.apellidos+"</span><p>Fecha: "+milist.data[index].published+"</p><p>Precio Ofertado: "+milist.data[index].precio_inicial+" Bs.</p><p>Distancia: "+milist.data[index].dt+"</p><p>Tiempo: "+milist.data[index].tt+"</p><p>Origen: "+milist.data[index].origen.descripcion+"</p><p>Destino: "+milist.data[index].destino.descripcion+"</p><a class='secondary-content tooltipped' data-position='bottom' data-tooltip='Aceptar Viaje' onclick='aceptar_viaje("+milist.data[index].id+")'><i class='material-icons'>send</i></a><p class=''>Estado: "+milist.data[index].estado.name+"</p></li>"
 
-                miul = miul + "<li class='collection-item'><span>Mapa del Viaje</span><a class='secondary-content' onclick='detalles_viaje("+milist.data[index].id+")'><i class='material-icons'>expand_more</i></a><a class='secondary-content' onclick='cerrar_mapa("+milist.data[index].id+")'><i class='material-icons'>expand_less</i></a><div id='mioferta_"+milist.data[index].id+"' class='oferta' hidden><div id='mimapa_"+milist.data[index].id+"' class='mimapa'></div><div class='col s9'><label for='oferta'>Contra Oferta</label><input id='oferta_"+milist.data[index].id+"' value='0' type='number'  class='validate'></div><div class='col s3'><label for=''>Enviar</label><a onclick='aceptar_viaje("+milist.data[index].id+")' style='background-color: #0C2746;' class='waves-effect waves-light btn'><i class='material-icons'>send</i></a></div></div><div><input id='estado_ofertado_viaje_"+milist.data[index].id+"' value='0' type='number'  class='validate' hidden></div></li>"
+                    miul = miul + "<li class='collection-item'><span> Mapa del Viaje #"+milist.data[index].id+"</span><a class='secondary-content' onclick='detalles_viaje("+milist.data[index].id+")'><i class='material-icons'>expand_more</i></a><a class='secondary-content' onclick='cerrar_mapa("+milist.data[index].id+")'><i class='material-icons'>expand_less</i></a><div id='mioferta_"+milist.data[index].id+"' class='oferta' hidden><div id='mimapa_"+milist.data[index].id+"' class='mimapa'></div><div class='col s9'><label for='oferta'>Contra Oferta</label><input id='oferta_"+milist.data[index].id+"' value='0' type='number'  class='validate'></div><div class='col s3'><label for=''>Enviar</label><a onclick='aceptar_viaje("+milist.data[index].id+")' style='background-color: #0C2746;' class='waves-effect waves-light btn'><i class='material-icons'>send</i></a></div></div><div><input id='estado_ofertado_viaje_"+milist.data[index].id+"' value='0' type='number'  class='validate' hidden></div></li>"
+                }
+                $("#milist").html(miul)
+            } else {
+                console.log('vacio')
+                miul = miul + "<center><li class='collection-item'> Espera en esta vantana, te llegaran los viajes.</li>"
+                miul = miul + "<li class='collection-item'><i class='large material-icons'>add_alert</i></center></li>"
+
+                $("#milist").html(miul)
             }
-            $("#milist").html(miul)
         }
     }
 
@@ -175,42 +184,47 @@
         var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
         var viaje= await axios("{{ setting('admin.url_api') }}viaje/"+data)
         var cliente= await axios("{{setting('admin.url_api')}}cliente_por_id/"+viaje.data.cliente_id)
-        if((chofer.data.creditos* parseInt("{{setting('creditos.credito_km')}}"))>=parseInt(viaje.data.distancia)){
-            if($('#estado_ofertado_viaje_'+data).val()==0){
-                if($('#oferta_'+data).val()==0){
-                    var nuevo_precio=viaje.data.precio_inicial
+        if(viaje.data.status_id==2){
+            if((chofer.data.creditos* parseInt("{{setting('creditos.credito_km')}}"))>=parseInt(viaje.data.distancia)){
+                if($('#estado_ofertado_viaje_'+data).val()==0){
+                    if($('#oferta_'+data).val()==0){
+                        var nuevo_precio=viaje.data.precio_inicial
+                    }
+                    else{
+                        var nuevo_precio=$('#oferta_'+data).val();
+                    }
+                    var cliente_id= cliente.data.id
+                    var chofer_id=michofer.id
+                    var viaje_id= viaje.data.id
+                    var precio_contraofertado=nuevo_precio
+                    var status=0
+                    var midata = JSON.stringify({'cliente_id':cliente_id, 'chofer_id':chofer_id, 'viaje_id':viaje_id, 'precio_contraofertado':precio_contraofertado, 'status':status})
+                    var negociacion= await axios("{{setting('admin.url_api')}}save_negociaciones/"+midata)
+                    cerrar_mapa(data);
+                    if(negociacion){
+                        M.toast({html : 'Viaje Aceptado Correctamente'})
+                        var michofer=JSON.parse(localStorage.getItem('michofer'));
+                        var mensaje="Hola, el Chofer: "+michofer.nombres+" "+michofer.apellidos+" aceptó el viaje, con el precio de: "+ nuevo_precio+" Bs. %0A Usted decidirá si está de acuerdo para cerrar la negociación."
+                        var mensaje2=" %0AEntre al siguiente link para ver sus viajes en negociación: %0A https://appxi.net/historial/cliente"
+                        var wpp=  axios("https://chatbot.appxi.net/?type=text&phone="+cliente.data.telefono+"&message="+mensaje+mensaje2)
+                        socket.emit("controferta", 'Contra Oferta')
+                    }
+                    $('#estado_ofertado_viaje_'+data).val(1)
                 }
                 else{
-                    var nuevo_precio=$('#oferta_'+data).val();
+                    M.toast({html : 'Ya postuló para este viaje, porfavor aguarde a que le respondan la solicitud'})
+                    console.log($('#estado_ofertado_viaje_'+data).val())
                 }
-                var cliente_id= cliente.data.id
-                var chofer_id=michofer.id
-                var viaje_id= viaje.data.id
-                var precio_contraofertado=nuevo_precio
-                var status=0
-                var midata = JSON.stringify({'cliente_id':cliente_id, 'chofer_id':chofer_id, 'viaje_id':viaje_id, 'precio_contraofertado':precio_contraofertado, 'status':status})
-                var negociacion= await axios("{{setting('admin.url_api')}}save_negociaciones/"+midata)
-                cerrar_mapa(data);
-                if(negociacion){
-                    M.toast({html : 'Viaje Aceptado Correctamente'})
-                    var michofer=JSON.parse(localStorage.getItem('michofer'));
-                    var mensaje="Hola, el Chofer: "+michofer.nombres+" "+michofer.apellidos+" aceptó el viaje, con el precio de: "+ nuevo_precio+" Bs. %0A Usted decidirá si está de acuerdo para cerrar la negociación."
-                    var mensaje2=" %0AEntre al siguiente link para ver sus viajes en negociación: %0A https://appxi.net/historial/cliente"
-                    var wpp=  axios("https://chatbot.appxi.net/?type=text&phone="+cliente.data.telefono+"&message="+mensaje+mensaje2)
-                    socket.emit("controferta", 'Contra Oferta')
-                }
-                $('#estado_ofertado_viaje_'+data).val(1)
             }
             else{
-                M.toast({html : 'Ya postuló para este viaje, porfavor aguarde a que le respondan la solicitud'})
-                console.log($('#estado_ofertado_viaje_'+data).val())
+                M.toast({html : 'Sus Créditos no son suficientes para realizar ese viaje'})
+                M.toast({html: 'Recuerde que 1 crédito equivale a 4km de recorrido en viajes'})
             }
         }
         else{
-            M.toast({html : 'Sus Créditos no son suficientes para realizar ese viaje'})
-            M.toast({html: 'Recuerde que 1 crédito equivale a 4km de recorrido en viajes'})
+            location.reload()
+            M.toast({html:'El cliente ya negoció con otro chofer, intente con otro viaje'})
         }
-
     }
 
     async function detalles_viaje(data) {

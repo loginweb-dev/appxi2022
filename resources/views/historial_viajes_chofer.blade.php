@@ -139,13 +139,14 @@
     </div>
     <div id="modal1" class="modal bottom-sheet">
         <div class="modal-content">
-            <h5>Cual es tu Telefono</h5>
+            <h5>Cual es tu WhatsApp ?</h5>
+            <small>para ingresar al sistema, te enviaremos un pin a tu WhatsApp</small>
             <div class="row">
                 <div class="col s9">
                     <input placeholder="Ingresa tu telefono - 8 digitos" id="telefono" type="number" class="validate">
                 </div>
                 <div class="col s3">
-                    <a id="btn_telefono" href="#" onclick="get_chofer()" class="waves-effect waves-light btn"><i class="material-icons">search</i></a>
+                    <a id="btn_telefono" style="background-color: #0C2746;" onclick="get_chofer()" class="waves-effect waves-light btn"><i class="material-icons">search</i></a>
                 </div>
             </div>
             <div class="row">
@@ -153,7 +154,7 @@
                     <input placeholder="PIN - 4 digitos" id="pin" type="number" class="validate" disabled>
                 </div>
                 <div class="col s3">
-                    <a id="btn_pin" href="#" onclick="get_pin()" class="waves-effect waves-light btn" disabled><i class="material-icons">key</i></a>
+                    <a id="btn_pin" style="background-color: #0C2746;" onclick="get_pin()" class="waves-effect waves-light btn" disabled><i class="material-icons">key</i></a>
                 </div>
             </div>
         </div>

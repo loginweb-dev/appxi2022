@@ -32,8 +32,8 @@
         var marker;
         socket.on('traking', (obj) =>{
                 console.log(obj)
-                marker.setPosition(new google.maps.LatLng(parseFloat(obj.lat), parseFloat(obj.lng) ) )
-                map.panTo( new google.maps.LatLng( parseFloat(obj.lat), parseFloat(obj.lng) ) )
+                marker.setPosition(new google.maps.LatLng(parseFloat(obj.lat), parseFloat(obj.lng)))
+                map.panTo(new google.maps.LatLng( parseFloat(obj.lat), parseFloat(obj.lng)))
             })
         $('document').ready(function () {
             get_viaje()
@@ -48,19 +48,20 @@
             marker = new google.maps.Marker({
                 position: myLatLng,
                 map: map,
-                icon: 'https://appxi.net//storage/taxi-icon-5_1.png'
+                icon: 'https://appxi.net//storage/iconpng.png'
             });
+            socket.on("final_viaje", (obj) =>{
+                location.reload()
+            })
         });
 
         async function get_viaje() {
-            // var miviaje = JSON.parse(localStorage.getItem('viaje'))
-            // var viaje = await axios("{{ setting('admin.url_api') }}viaje/"+miviaje.id)
-            // console.log(viaje.data)
-            // if (viaje.data) {
-
-            // } else {
-
-            // }
+            var miviaje = JSON.parse(localStorage.getItem('viaje'))
+            var viaje = await axios("{{ setting('admin.url_api') }}viaje/"+miviaje.id)
+            console.log(viaje.data)
+            if (viaje.data.status_id==4 ||viaje.data.status_id==5) {
+                location.href='/welcome'
+            }
         }
 
         function set_origen() {

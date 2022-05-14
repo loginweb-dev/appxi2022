@@ -35,19 +35,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('cliente/by/{telefono}', function ($telefono) {
     return Cliente::where('telefono', $telefono)->with('ciudad')->first();
 });
+Route::get('cliente/id/{id}', function ($id) {
+    return Cliente::find($id);
+});
 Route::get('cliente/viajes/{id}', function ($id) {
     return Viaje::where('cliente_id', $id)->with('cliente', 'estado', 'categoria','origen','destino')->orderBy('created_at', 'desc')->get();
 });
 Route::get('cliente/viaje/negociaciones/{id}', function ($id) {
-    //add chofer libre
-    // $nego = Negociacione::where('viaje_id', $id)->with('chofer')->get();
-    // $chofer = Chofer::where('chofer_id', $nego->chofer_id)->first();
-    // if ($chofer->estado) {
-    //     # code...
-    // } else {
-    //     # code...
-    // }
-
     return Negociacione::where('viaje_id', $id)->with('chofer')->get();
 });
 
@@ -96,7 +90,7 @@ Route::get('chofer_por_id/{id}', function($id){
 });
 //BUSCAR CHOFER POR CRITERIO
 Route::get('chofer/name/{criterio}', function($criterio){
-    $cliente= Chofere::where('name', 'like', '%'.$criterio.'%')->orderBy('name', 'desc')->get();
+    return Chofere::where('name', 'like', '%'.$criterio.'%')->orderBy('name', 'desc')->get();
 });
 //TODAS LAS CIUDADES
 Route::get('ciudades', function(){
@@ -265,10 +259,12 @@ Route::get('chofer/pin/save/{chofer_id}/{pin}', function ($chofer_id, $pin) {
     $chofer = Chofere::find($chofer_id);
     $chofer->pin = $pin;
     $chofer->save();
+    $newchofer = Chofere::where('telefono', $chofer->telefono)->where('pin', $chofer->pin)->with('ciudad', 'categoria')->first();
+
     return $chofer;
 });
 Route::get('chofer/pin/get/{telefono}/{pin}', function ($telefono, $pin) {
-    $chofer = Chofere::where('telefono', $telefono)->where('pin', $pin)->with('ciudad')->first();
+    $chofer = Chofere::where('telefono', $telefono)->where('pin', $pin)->with('ciudad', 'categoria')->first();
     return $chofer;
 });
 
@@ -332,7 +328,7 @@ Route::get('chofer_viaje_consulta/{id}', function($id){
 
 //Consultar Chofer Ocupado con Viaje(Llevando a su destino)
 Route::get('viaje_chofer_encurso/{id}', function($id){
-    $viajes= Viaje::where('chofer_id',$id)->where('status_id',3)->first();
+    $viajes= Viaje::where('chofer_id',$id)->where('status_id',3)->with('cliente')->first();
     return $viajes;
 });
 

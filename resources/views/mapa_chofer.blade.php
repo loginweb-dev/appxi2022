@@ -5,7 +5,7 @@
 <style>
     .mimapa {
         width: 100%;
-        height: 550px;
+        height: 500px;
     }
     .oferta {
         width: 100%;
@@ -25,40 +25,42 @@
 
     <div class="container-fluid">
         <div class="row">
-            <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil">
+            {{-- <img class="responsive-img" src="{{ url('storage').'/'.setting('site.banner_bienvenida') }}" alt="Perfil"> --}}
             {{-- <h5 class="center-align">Mapa del Viaje en Proceso</h5> --}}
 
             <div class="col s12">
-                <p>Debe ir a recoger al cliente en el lugar indicado (A), para posteriormente llevarlo a su destino (B).</p>
-
-
-                <div id="map1"  >
+                <center>
+                    <p>Debe ir a recoger al cliente en el lugar indicado (A), para posteriormente llevarlo a su destino (B).</p>
+                </center>
+                <div id="map1" >
                     <div id="mimapa" class="mimapa"></div>
                     <div id="distancia" class="col s3"></div>
                     <div id="tiempo" class="col s3"></div>
                     <div id="recoger_cliente" class="col s6"></div>
+                    <div class="col s12">
+                        <br>
+                        <hr>
+                    </div>
                     <div id="text_cancelar" class="col s7"></div>
                     <div id="boton_cancelar" class="col s5"></div>
                 </div>
 
                 <div id="map2" hidden>
                     <div id="mimapa2" class="mimapa"></div>
+                    <div class="col s6"></div>
+                    <div id="llamada_usuario" class="col s6"></div>
                     <div id="terminar_viaje" class="col s6" ></div>
                     <div id="distancia2" class="col s3"></div>
                     <div id="tiempo2" class="col s3"></div>
-                    <div id="text_cancelar2" class="col s7"></div>
-                    <div id="boton_cancelar2" class="col s5"></div>
+                    <div class="col s12">
+                        <hr>
+                    </div>
+                    <div id="text_cancelar2" class="col s6"></div>
+                    <div id="boton_cancelar2" class="col s6"></div>
                 </div>
-
-
-
             </div>
-
         </div>
-
     </div>
-
-
 @endsection
 
 @section('javascript')
@@ -67,14 +69,7 @@
         var marker;
         $('document').ready(function () {
             cargar();
-            var options = {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-            };
-            navigator.geolocation.watchPosition(success, error2, options);
         });
-
 
         async function mostrar_recogiendo() {
             var michofer = JSON.parse(localStorage.getItem('michofer'))
@@ -90,7 +85,8 @@
             $("#tiempo").html(tiempo)
 
             var recoger_cliente=''
-            recoger_cliente=recoger_cliente+"<br><button class='btn waves-effect waves-light' type='submit' onclick='cliente_recogido("+consulta_viaje_disponible.data.id+")' name='action'>Recoger<i class='material-icons right'>send</i></button>"
+            recoger_cliente=recoger_cliente+"<small>Dale clicnk cuando llegues a la ubicacion del pasajero<small><br>"
+            recoger_cliente=recoger_cliente+"<br><button style='background-color: #0C2746;' class='btn waves-effect waves-light' type='submit' onclick='cliente_recogido("+consulta_viaje_disponible.data.id+")' name='action'>Recoger<i class='material-icons right'>send</i></button>"
             $('#recoger_cliente').html(recoger_cliente)
 
             var text_cancelar=''
@@ -107,6 +103,11 @@
             var michofer = JSON.parse(localStorage.getItem('michofer'))
             var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
             var viaje_encurso= await axios("{{ setting('admin.url_api')}}viaje_chofer_encurso/"+chofer.data.id)
+            console.log(viaje_encurso.data)
+            var llamada_usuario=''
+            llamada_usuario=llamada_usuario+"<br><button class='btn waves-effect waves-light' type='submit' onclick='llamar_wpp("+viaje_encurso.data.cliente.telefono+")' name='action'>Llamar Wpp<i class='material-icons right'>call</i></button>"
+            llamada_usuario=llamada_usuario+"<br>Pasajero: "+viaje_encurso.data.cliente.nombres+" "+ viaje_encurso.data.cliente.apellidos
+            $('#llamada_usuario').html(llamada_usuario)
 
             var distancia2=''
             distancia2=distancia2+"<label for='text_distancia2'>Distancia Aproximada</label><input id='text_distancia2' type='text'  class='validate' readonly>"
@@ -117,7 +118,7 @@
             $("#tiempo2").html(tiempo2)
 
             var terminar_viaje=''
-            terminar_viaje= terminar_viaje+"<br><button class='btn waves-effect waves-light' type='submit' onclick='conluir_viaje("+viaje_encurso.data.id+")' name='action'>Finalizar<i class='material-icons right'>send</i></button>"
+            terminar_viaje= terminar_viaje+"<br><button style='background-color: #0C2746;' class='btn waves-effect waves-light' type='submit' onclick='conluir_viaje("+viaje_encurso.data.id+")' name='action'>Finalizar<i class='material-icons right'>send</i></button>"
             $("#terminar_viaje").html(terminar_viaje)
 
             var text_cancelar2=''
@@ -135,10 +136,9 @@
             var chofer = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
             var viaje_encurso=  await axios("{{ setting('admin.url_api')}}viaje_chofer_encurso/"+chofer.data.id)
             var consulta_viaje_disponible= await axios("{{ setting('admin.url_api')}}chofer_viaje_consulta/"+chofer.data.id)
-
             if(consulta_viaje_disponible.data){
                 mostrar_recogiendo();
-
+                console.log('estoy aqui')
                 var options = {
                     enableHighAccuracy: true,
                     timeout: 5000,
@@ -159,6 +159,10 @@
             }
         }
 
+        async function llamar_wpp(telefono) {
+            window.open('https://wa.me/591'+telefono,'_blank')
+        }
+
         async function cliente_recogido(id) {
             var recogido= await axios("{{setting('admin.url_api')}}cliente_recogido/"+id)
             var viaje=await axios("{{setting('admin.url_api')}}viaje/"+id)
@@ -170,6 +174,7 @@
 
 
         async function conluir_viaje(id) {
+            document.getElementById('terminar_viaje').style.visibility='hidden';
             var viaje_concluido=await axios("{{ setting('admin.url_api')}}concluir_viaje/"+id)
             if(viaje_concluido){
                 var michofer = JSON.parse(localStorage.getItem('michofer'))
@@ -185,7 +190,9 @@
                 var mensaje_chofer="Su viaje fue concluido con éxito, ya se encuentra disponible para realizar otros, recuerde que el cliente puede calificar la experiencia del viaje."
                 var wpp_mensaje_chofer= await axios("https://chatbot.appxi.net/?type=text&phone="+michofer.telefono+"&message="+mensaje_chofer)
 
+                socket.emmit('final_viaje','finalizar')
                 location.href='/viajes/monitor'
+
             }
         }
 
@@ -211,12 +218,13 @@
                     var wpp_mensaje_chofer= await axios("https://chatbot.appxi.net/?type=text&phone="+michofer.telefono+"&message="+mensaje_chofer)
 
                     location.href='/viajes/monitor'
+                    socket.emmit('final_viaje','finalizar')
+
                 }
             }
             else{
                 M.toast({html:'Tiene que escribir el motivo de su cancelación'})
             }
-
         }
 
 
@@ -245,6 +253,14 @@
                 position: myLatLng,
                 map
             });
+
+            var options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+            };
+            navigator.geolocation.watchPosition(success, error2, options);
+
             socket.emit('traking', {lat: pos.coords.latitude, lng: pos.coords.longitude})
             ruta1(myLatLng, map)
         }
@@ -252,6 +268,18 @@
         function success(pos) {
             var crd = pos.coords;
             socket.emit('traking', {lat: pos.coords.latitude, lng: pos.coords.longitude})
+            var myLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+            // map = new google.maps.Map(document.getElementById("mimapa"), {
+            //     center: myLatLng,
+            //     zoom: 15,
+            // });
+            // marker = new google.maps.Marker({
+            //     animation: google.maps.Animation.DROP,
+            //     position: myLatLng,
+            //     map,
+            //     icon: 'https://appxi.net//storage/iconpng.png'
+
+            // });
             marker.setPosition(new google.maps.LatLng( pos.coords.latitude, pos.coords.longitude ) )
             map.panTo( new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude ) )
         };
@@ -272,6 +300,14 @@
                 position: myLatLng,
                 map
             });
+
+            var options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+            };
+            navigator.geolocation.watchPosition(success, error2, options);
+
             socket.emit('traking', {lat: parseFloat(origen.data.latitud), lng: parseFloat(origen.data.longitud)})
             ruta2(myLatLng, destinoLatLong, map)
         }
@@ -316,7 +352,7 @@
                 animation: google.maps.Animation.DROP,
                 position: destinoLatLong,
                 map,
-                icon: 'https://appxi.net//storage/taxi-icon-5_1.png'
+                icon: 'https://appxi.net//storage/iconpng.png'
             });
             directionsService.route(viaje, async function(response, status) {
                 if (status == google.maps.DirectionsStatus.OK) {

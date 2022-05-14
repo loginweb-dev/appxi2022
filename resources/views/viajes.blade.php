@@ -62,7 +62,7 @@
             <li>
                 <div class="collapsible-header"><i class="material-icons">edit_location</i>Destino del Viaje</div>
                     <div class="collapsible-body">
-                    <p>Dale click en el mapa para establecer tu ubicacion de destino.</p>
+                    <p>Mueve el markador en el mapa para establecer tu ubicacion de destino.</p>
                     <div id="map2"></div>
                     <input id="latitud2" type="text" class="validate" hidden>
                     <input id="longitud2" type="text" class="validate" hidden>
@@ -82,11 +82,11 @@
 
                         <div class="input-field col s6">
                             <label for="text_start">Origen</label>
-                            <input placeholder="" id="text_start" type="text" class="validate" readonly>
+                            <input placeholder="" id="text_start" type="text" class="validate">
                         </div>
                         <div class="input-field col s6">
                             <label for="text_end">Destino</label>
-                            <input  placeholder="" id="text_end" type="text" class="validate" readonly>
+                            <input  placeholder="" id="text_end" type="text" class="validate">
                         </div>
 
                         {{-- <div class="input-field col s6">
@@ -192,7 +192,8 @@
 
     @section('javascript')
     <script>
-
+        var map;
+        var maker;
         $('document').ready(function () {
             $('.collapsible').collapsible();
             $('.modal').modal();
@@ -208,7 +209,6 @@
 
         async function get_estado(cliente_id) {
             var miuser = await axios("{{setting('admin.url_api')}}cliente_por_id/"+cliente_id)
-            // console.log(miuser.data)
             if (miuser.data.estado) {
                 location.href = '/mapa/cliente'
             } else {
@@ -225,68 +225,26 @@
         $('input[type=radio][name=group1]').change(async function() {
             var categoria = await axios.get("{{ setting('admin.url_api') }}categoria/"+this.value)
             localStorage.setItem('micategoria', JSON.stringify(categoria.data));
-            // document.body.scrollTop = -150
-            // window.scrollBy(0, 270);
-            // console.log(document.body.scrollTop)
             var instance = M.Collapsible.getInstance($('.collapsible').collapsible())
             instance.open(1)
         });
-
-        function initMap(pos) {
-            var crd = pos.coords
-            var radio = pos.accuracy
-            myLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: myLatLng,
-                zoom: 11,
-            });
-            // // 2 marker
-            var myLatLng2 = { lat: -14.8350387349957, lng: -64.9041263226692 }
-            directionsDisplay = new google.maps.DirectionsRenderer();
-            directionsService = new google.maps.DirectionsService();
-            directionsDisplay.setMap(map);
-            var viaje = {
-                origin:myLatLng,
-                destination:myLatLng2,
-                travelMode: google.maps.DirectionsTravelMode.DRIVING
-            };
-
-            directionsService.route(viaje, function(response, status) {
-                if (status == google.maps.DirectionsStatus.OK) {
-                    directionsDisplay.setDirections(response);
-                    var myRoute = response.routes[0];
-                    // var txtDir = '';
-                    // for (var i=0; i<myRoute.legs[0].steps.length; i++) {
-                    // txtDir += myRoute.legs[0].steps[i].instructions+"<br />";
-                    // }
-                    // document.getElementById('directions').innerHTML = txtDir;
-                    $("#distancia").val(response.routes[0].legs[0].distance.text);
-                    $("#tiempo").val(response.routes[0].legs[0].duration.text);
-                    $("#text_start").val(response.routes[0].legs[0].start_address);
-                    $("#text_end").val(response.routes[0].legs[0].end_address);
-                    map.setCenter(new google.maps.LatLng(myLatLng.lat, myLatLng.lng));
-                }
-            });
-            map.setCenter(new google.maps.LatLng(myLatLng.lat, myLatLng.lng));
-            google.maps.event.addListener(map, 'click', newmarker);
-        }
 
         function set_origen(pos) {
             var crd = pos.coords
             var radio = pos.accuracy
             var myLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-            var map = new google.maps.Map(document.getElementById("map"), {
+            map = new google.maps.Map(document.getElementById("map"), {
                 center: myLatLng,
                 zoom: 13,
             });
-            var marker1 = new google.maps.Marker({
+            marker = new google.maps.Marker({
                 animation: google.maps.Animation.DROP,
                 draggable: true,
                 position: myLatLng,
                 map,
-                label: "OR"
+                icon: "https://appxi.net//storage/icons8-ubicacio%CC%81n-del-usuario-64.png"
             });
-            google.maps.event.addListener(marker1, 'dragend', function (evt) {
+            google.maps.event.addListener(marker, 'dragend', function (evt) {
                 $("#latitud").val(evt.latLng.lat());
                 $("#longitud").val(evt.latLng.lng());
                 map.panTo(evt.latLng);
@@ -318,19 +276,26 @@
             }
         }
 
-        var map2;
         function set_destino() {
             var miuser = JSON.parse(localStorage.getItem('miuser'))
-            var myLatLng2 = { lat: parseFloat(miuser.ciudad.latitud), lng: parseFloat(miuser.ciudad.longitud) }
-            map2 = new google.maps.Map(document.getElementById("map2"), {
-                center: myLatLng2,
+            var myLatLng = { lat: parseFloat(miuser.ciudad.latitud), lng: parseFloat(miuser.ciudad.longitud) }
+            map = new google.maps.Map(document.getElementById("map2"), {
+                center: myLatLng,
                 zoom: 14,
             });
-            google.maps.event.addListener(map2, 'click', newmarker);
-            // window.scrollBy(0, 370);
+            var marker = new google.maps.Marker({
+                animation: google.maps.Animation.DROP,
+                draggable: true,
+                position: myLatLng,
+                map,
+                icon: "https://appxi.net//storage/icons8-ubicacio%CC%81n-del-usuario-64.png"
+            });
+            google.maps.event.addListener(marker, 'dragend', function (evt) {
+                newmarker(map ,evt)
+            });
         }
 
-        function newmarker(event) {
+        function newmarker(map, event) {
             var micategoria = JSON.parse(localStorage.getItem('micategoria'))
             var miuser = JSON.parse(localStorage.getItem('miuser'))
             var origen = JSON.parse(localStorage.getItem('origen'))
@@ -341,9 +306,8 @@
                 travelMode: google.maps.DirectionsTravelMode.DRIVING
             };
             var directionsDisplay = new google.maps.DirectionsRenderer();
-            directionsDisplay.suppressMarkers = true;
             var directionsService = new google.maps.DirectionsService();
-            directionsDisplay.setMap(map2);
+            directionsDisplay.setMap(map);
             directionsService.route(viaje, async function(response, status) {
                 if (status == google.maps.DirectionsStatus.OK) {
                     directionsDisplay.setDirections(response)
@@ -362,8 +326,8 @@
         }
 
         function error(err) {
-            alert(err.message+" - Habilita tu Sensor GPS")
-            console.warn('ERROR(' + err.code + '): ' + err.message)
+            alert("Habilita tu Sensor GPS")
+            location.reload()
         };
 
         async function set_ciudad() {
@@ -471,7 +435,7 @@
             var cantidad_objetos = $("#cantidad_objetos").val()
             var cantidad_viajeros = $("#cantidad_viajeros").val()
             if (parseFloat(precio_ofertado) > 0) {
-                $('#btn_save').attr('hidden', true)
+                document.getElementById('btn_save').style.visibility='hidden';
                 var miuser = JSON.parse(localStorage.getItem('miuser'))
                 var micategoria = JSON.parse(localStorage.getItem('micategoria'))
                 var origen = JSON.parse(localStorage.getItem('origen'))
@@ -493,8 +457,8 @@
                     'cantidad_viajeros': cantidad_viajeros,
                     'dt': destino.dt,
                     'tt': destino.tt,
-                    'origen_g': null,
-                    'destino_g': null
+                    'origen_g': destino.origen_g.replace('#', '-'),
+                    'destino_g': destino.destino_g.replace('#', '-')
                 }
                 // console.log(newviaje)
                 var viaje = await axios("{{setting('admin.url_api')}}viaje/save/"+JSON.stringify(newviaje))

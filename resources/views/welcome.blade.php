@@ -50,6 +50,16 @@
 <script>
       $(document).ready(function(){
         $('.slider').slider();
+
+        socket.on('limpiar_localstorage', (obj) =>{
+            localStorage.removeItem('micategoria');
+            localStorage.removeItem('origen');
+            localStorage.removeItem('destino');
+            localStorage.removeItem('michofer');
+            localStorage.removeItem('miuser');
+            localStorage.removeItem('viaje');
+            location.reload();
+	    })
     });
 </script>
 @endsection

@@ -8,7 +8,7 @@
         <div class="col s12">
             <center>
                 <h4>Gracias por tu preferencia</h4>
-                <p>Hola, gracias por tu preferencia, APPXI esta buscando un taxi ideal para ti, espera una notificacion por whatsapp cuando este listo tu taxi</p>
+                <p>Hola, gracias por tu preferencia, APPXI esta buscando un taxi ideal para ti, espera una notificacion por whatsapp cuando este listo tu viaje</p>
             </center>
             <table>
                 <tbody>
@@ -53,7 +53,7 @@
         <div class="col s12">
             <br>
             <center>
-            <a href="/historial/cliente" style="background-color: #0C2746;" class="waves-effect waves-light btn pulse"><i class="material-icons">history</i> Mi Historial</a>
+            <a href="/historial/cliente" onclick="save()"style="background-color: #0C2746;" class="waves-effect waves-light btn pulse" id="btn_save"><i class="material-icons">history</i> Mi Historial</a>
             </center>
         </div>
     </div>
@@ -73,6 +73,15 @@
             $("#distancia").html("<span class='new badge blue'>"+viaje.dt+"</span>")
             $("#tiempo").html("<span class='new badge blue'>"+viaje.tt+"</span>")
             $("#categoria").html("<span class='new badge blue'>"+viaje.categoria.name+"</span>")
+
+            socket.on("controferta", (obj) =>{
+                location.href = "/historial/cliente"
+            })
         });
+
+        function save() {
+            document.getElementById('btn_save').style.visibility='hidden';
+        }
     </script>
+
 @endsection
