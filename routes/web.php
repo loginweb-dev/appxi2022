@@ -118,30 +118,102 @@ return view('welcome_chofer', compact('chofer'));
 
 
 Route::post('chofer_update', function  (Request $request) {
-    $validated = $request->validate([
-        'categoria_id' => 'required|integer'
-    ]);
-    $validated = $request->validate([
-        'ciudad_id' => 'required'
-    ]);
-    $perfil = $request->file('imgchofer');
-    $newperfil =  Storage::disk('public')->put('choferes', $perfil);
-    $ci= $request->file('imgcarnet');
-    $newcarnet=[];
-    $indexcarnet=0;
-    foreach($ci as $item){
-        $newcarnet[$indexcarnet]=Storage::disk('public')->put('choferes', $item);
-        $indexcarnet=$indexcarnet+1;
+
+    $chofer=App\Chofere::where('telefono',$request->phone)->first();
+    $verificacion=1;
+
+
+    $perfil = $request->file('imgchofer') ? $request->file('imgchofer'):null;
+    if($perfil!=null){
+        $newperfil =  Storage::disk('public')->put('choferes', $perfil);
+        // if(($chofer->perfil)!=null){
+        //     $oldperfil= Storage::disk('public')->delete('choferes',$chofer->perfil);
+        // }
+        $chofer->perfil=$newperfil;
     }
-    $licencia= $request->file('imglicencia');
-    $newlicencia=[];
-    $indexlicencia=0;
-    foreach($licencia as $item){
-        $newlicencia[$indexlicencia]=Storage::disk('public')->put('choferes', $item);
-        $indexlicencia=$indexlicencia+1;
+
+    $ci= $request->file('imgcarnet') ? $request->file('imgcarnet') :null ;
+    if($ci!=null){
+        $newcarnet=[];
+        $indexcarnet=0;
+        // $indexoldcarnet=0;
+        // $arreglocarnet[]=$chofer->carnet;
+        // if($arreglocarnet!=null){
+        //     foreach ($arreglocarnet as $itemold) {
+        //         $oldcarnet= Storage::disk('public')->delete('choferes',$itemold[$indexoldcarnet]);
+        //         $indexoldcarnet=$indexoldcarnet+1;
+        //     }
+        // }
+        foreach($ci as $item){
+            $newcarnet[$indexcarnet]=Storage::disk('public')->put('choferes', $item);
+            $indexcarnet=$indexcarnet+1;
+        }
+        $chofer->carnet=$newcarnet;
+        $verificacion=0;
+
     }
-    $vehiculo= $request->file('imgfotosdelvehiculo');
-    $newvehiculo=Storage::disk('public')->put('choferes', $vehiculo);
+
+
+    $licencia= $request->file('imglicencia') ? $request->file('imglicencia'):null;
+    if($licencia!=null){
+        $newlicencia=[];
+        $indexlicencia=0;
+        foreach($licencia as $item){
+            $newlicencia[$indexlicencia]=Storage::disk('public')->put('choferes', $item);
+            $indexlicencia=$indexlicencia+1;
+        }
+        $chofer->breve=$newlicencia;
+        $verificacion=0;
+
+    }
+
+
+    $vehiculo= $request->file('imgfotosdelvehiculo') ? $request->file('imgfotosdelvehiculo'):null;
+    if($vehiculo!=null){
+        $newvehiculo=Storage::disk('public')->put('choferes', $vehiculo);
+        $chofer->vehiculo=$newvehiculo;
+        $verificacion=0;
+    }
+
+    if($request->firstname!=$chofer->nombres){
+        $verificacion=0;
+    }
+    if($request->lastname!=$chofer->apellidos){
+        $verificacion=0;
+    }
+
+    if($request->ciudad_id!=$chofer->ciudad_id){
+        $verificacion=0;
+    }
+    if($request->categoria_id!=$chofer->categoria_id){
+        $verificacion=0;
+    }
+
+
+    $nombres=$request->firstname ? $request->firstname:null;
+    $apellidos=$request->lastname ? $request->lastname:null;
+    $email=$request->email ? $request->email:null;
+    $categoria=$request->categoria_id;
+    $ciudad=$request->ciudad_id;
+
+    $chofer->nombres=$nombres;
+    $chofer->apellidos=$apellidos;
+    $chofer->email=$email;
+    $chofer->categoria_id=$categoria;
+    $chofer->ciudad_id=$ciudad;
+
+    if($verificacion!=1){
+        $chofer->estado_verificacion=$verificacion;
+    }
+
+    $chofer->save();
+
+
+    return view('perfil_chofer', compact('chofer'));
+
+
+
+
 })->name('update_chofer');
 
 

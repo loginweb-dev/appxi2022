@@ -38,8 +38,8 @@
                     <h5>Perfil Conductor(a)</h5>
                 </div>
                 <div class="col s7">
-                    <div id="verification"></div>
-                    <div id="perfil_chofer" class="input-field col s4"></div>
+                    <div id="verification" class="input-field col s4" ></div>
+                    <div id="perfil_chofer" class="input-field col s8"></div>
                     <div class="divider"></div>
                 </div>
                 <div class="input-field col s6">
@@ -62,12 +62,12 @@
 
                 <div class="input-field col s6">
                     <label for="verificacion">Estado de Verificación</label>
-                    <input type="number" class="validate" id="verificacion" name="verificacion" value="1"  readonly>
+                    <input type="number" class="validate" id="verificacion" name="verificacion" placeholder="Estado de Verificación"   readonly>
                 </div>
 
                 <div class="input-field col s6">
                     <label for="verificacion">Categoria</label>
-                    <input type="text" class="validate" id="micategoria" name="micategoria" readonly>
+                    <input type="text" class="validate" id="micategoria" name="micategoria" placeholder="Categoría" readonly>
                 </div>
 
             </div>
@@ -85,7 +85,7 @@
 
                 <div class="file-field input-field">
                     <div class="btn">
-                        <input id="imgchofer" name="imgchofer" type="file" required >
+                        <input id="imgchofer" name="imgchofer" type="file"  >
                         <i class="material-icons">photo_library</i>
                     </div>
                     <div class="file-path-wrapper">
@@ -102,7 +102,7 @@
                     <div class="file-field input-field">
                         <div class="btn">
                             {{-- <span>Seleccione Archivo</span> --}}
-                            <input id="imgfotosdelvehiculo" name="imgfotosdelvehiculo" type="file" required >
+                            <input id="imgfotosdelvehiculo" name="imgfotosdelvehiculo" type="file"  >
                             <i class="material-icons">photo_size_select_actual</i>
                         </div>
                         <div class="file-path-wrapper">
@@ -135,7 +135,7 @@
                         <div class="file-field input-field">
                             <div class="btn">
                                 {{-- <span>Seleccione Archivos</span> --}}
-                                <input id="imgcarnet" name="imgcarnet[]" type="file" multiple required >
+                                <input id="imgcarnet" name="imgcarnet[]" type="file" multiple  >
                                 <i class="material-icons">photo_size_select_actual</i>
                             </div>
                             <div class="file-path-wrapper">
@@ -146,7 +146,7 @@
                     <div class="input-field col s6">
                         <div class="file-field input-field">
                             <div class="btn">
-                                <input id="imglicencia" name="imglicencia[]"  type="file" multiple required >
+                                <input id="imglicencia" name="imglicencia[]"  type="file" multiple  >
                                 <i class="material-icons">photo_size_select_actual</i>
                             </div>
                             <div class="file-path-wrapper">
@@ -197,20 +197,34 @@
 @section('javascript')
 
 <script>
-    $(document).ready(function(){
+    $(document).ready( function(){
         $('.tooltipped').tooltip();
         $('.modal').modal();
         $('select').formSelect();
+
+        RecargarChofer();
+    });
+
+    async function RecargarChofer() {
+
+        //Consulto si existe chofer
         var michofer = JSON.parse(localStorage.getItem('michofer'))
         if (michofer) {
+
+            //Ingreso los datos de sesión consultando a la BD
+            var michofer2 = await axios("{{ setting('admin.url_api') }}chofer/by/"+michofer.telefono)
+            localStorage.setItem('michofer', JSON.stringify(michofer2.data))
+
             // $("#micategoria").val(michofer.categoria.name)
-            M.toast({html: 'Bienvenido! '+michofer.nombres+' '+michofer.apellidos})
+            M.toast({html: 'Bienvenido! '+michofer2.data.nombres+' '+michofer2.data.apellidos})
             $("#miul").attr('hidden', false);
             setear_inputs();
-            $('#perfil_chofer').html("<img src='"+chofer()+"' alt='' width'' class='responsive-img circle'>")
-            $('#vehiculo_chofer').html("<img src='"+vehiculo_chofer()+"' alt='' width'' class='responsive-img'>")
-            carnet_chofer();
-            licencia_chofer();
+            ImagenesExistentes();
+
+            // $('#perfil_chofer').html("<img src='"+chofer()+"' alt='' width'' class='responsive-img circle'>")
+            // $('#vehiculo_chofer').html("<img src='"+vehiculo_chofer()+"' alt='' width'' class='responsive-img'>")
+            // carnet_chofer();
+            // licencia_chofer();
 
             Categorias();
             Ciudades();
@@ -218,7 +232,8 @@
         } else {
             $('#modal1').modal('open');
         }
-    });
+
+    }
 
     async function get_chofer() {
         var telefono = $("#telefono").val()
@@ -253,10 +268,11 @@
             M.toast({html : 'Bienvenido'})
             $("#miul").attr('hidden', false);
             setear_inputs();
-            $('#perfil_chofer').html("<img src='"+chofer()+"' alt='' width'' class='responsive-img circle'>")
-            $('#vehiculo_chofer').html("<img src='"+vehiculo_chofer()+"' alt='' width'' class='responsive-img'>")
-            carnet_chofer();
-            licencia_chofer();
+            ImagenesExistentes();
+            // $('#perfil_chofer').html("<img src='"+chofer()+"' alt='' width'' class='responsive-img circle'>")
+            // $('#vehiculo_chofer').html("<img src='"+vehiculo_chofer()+"' alt='' width'' class='responsive-img'>")
+            // carnet_chofer();
+            // licencia_chofer();
             Categorias();
             Ciudades();
             Verification();
@@ -287,27 +303,27 @@
         return vehiculo
     }
     function carnet_chofer(){
-        // var michofer=JSON.parse(localStorage.getItem('michofer'));
-        // var carnet=JSON.parse(michofer.carnet)
-        // var midata=""
-        // for(let index=0;index <carnet.length;index++){
-        //     var carnet_j= "{{setting('admin.url_storage')}}"+carnet[index]
+        var michofer=JSON.parse(localStorage.getItem('michofer'));
+        var carnet=JSON.parse(michofer.carnet)
+        var midata=""
+        for(let index=0;index <carnet.length;index++){
+            var carnet_j= "{{setting('admin.url_storage')}}"+carnet[index]
 
-        //     midata=midata+"<img src='"+carnet_j+"' alt='' width'' class='responsive-img'>"
-        // }
-        // $('#carnet_chofer').html(midata)
+            midata=midata+"<img src='"+carnet_j+"' alt='' width'' class='responsive-img'>"
+        }
+        $('#carnet_chofer').html(midata)
 
     }
     function licencia_chofer(){
-        // var michofer=JSON.parse(localStorage.getItem('michofer'));
-        // var licencia=JSON.parse(michofer.breve)
-        // var midata=""
-        // for(let index=0;index <licencia.length;index++){
-        //     var licencia_j= "{{setting('admin.url_storage')}}"+licencia[index]
+        var michofer=JSON.parse(localStorage.getItem('michofer'));
+        var licencia=JSON.parse(michofer.breve)
+        var midata=""
+        for(let index=0;index <licencia.length;index++){
+            var licencia_j= "{{setting('admin.url_storage')}}"+licencia[index]
 
-        //     midata=midata+"<img src='"+licencia_j+"' alt='' width'' class='responsive-img'>"
-        // }
-        // $('#licencia_chofer').html(midata)
+            midata=midata+"<img src='"+licencia_j+"' alt='' width'' class='responsive-img'>"
+        }
+        $('#licencia_chofer').html(midata)
 
     }
 
@@ -319,6 +335,8 @@
         $("#phone").val(michofer.telefono)
         // $("#micategoria").val(michofer.telefono)
         $("#micategoria").val(michofer.categoria.name)
+        $('#verificacion').val(michofer.estado_verificacion)
+
     }
 
     async function Categorias() {
@@ -372,6 +390,28 @@
             else{
                 $('#verification').html("<div class='input-field col s3' > <br><br> <i class='material-icons'>warning</i> <br> <small>sin verificar</small> </div>")
             }
+        }
+
+        async function ImagenesExistentes() {
+            var michofer=JSON.parse(localStorage.getItem('michofer'));
+
+            if (michofer.perfil!=null) {
+                $('#perfil_chofer').html("<img src='"+chofer()+"' alt='' width'' class='responsive-img circle'>")
+            }
+            else{
+                $('#perfil_chofer').html("<img src='{{url('storage').'/'.setting('chofer.perfil_default')}}' alt='' width'' class='responsive-img circle'>")
+            }
+            if (michofer.vehiculo!=null) {
+                $('#vehiculo_chofer').html("<img src='"+vehiculo_chofer()+"' alt='' width'' class='responsive-img'>")
+            }
+            if(michofer.carnet!=null){
+                carnet_chofer();
+            }
+            if (michofer.breve!=null) {
+                licencia_chofer();
+            }
+
+
         }
 </script>
 

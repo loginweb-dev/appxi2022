@@ -251,7 +251,8 @@
             marker = new google.maps.Marker({
                 animation: google.maps.Animation.DROP,
                 position: myLatLng,
-                map
+                map,
+                icon: 'https://appxi.net//storage/iconpng.png'
             });
 
             var options = {
@@ -267,6 +268,7 @@
 
         function success(pos) {
             var crd = pos.coords;
+            console.log(crd)
             socket.emit('traking', {lat: pos.coords.latitude, lng: pos.coords.longitude})
             var myLatLng = { lat: pos.coords.latitude, lng: pos.coords.longitude }
             // map = new google.maps.Map(document.getElementById("mimapa"), {
@@ -298,7 +300,8 @@
             marker = new google.maps.Marker({
                 animation: google.maps.Animation.DROP,
                 position: myLatLng,
-                map
+                map,
+                icon: 'https://appxi.net//storage/iconpng.png'
             });
 
             var options = {
